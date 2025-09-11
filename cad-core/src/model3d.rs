@@ -1,7 +1,6 @@
-// cad-core/src/model3d.rs
 //! 3D-модель проекта: ЖБ-элементы и арматура.
 //! Геометрия хранится в лёгких представлениях (экструзии/свипы), а точный B-Rep
-//! подключаем опционально через фичу `truck_brep`.
+//! подключаем опционально через фичу `truck-brep`.
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -11,11 +10,11 @@ use crate::mesh::Mesh;
 // Truck geometry: кривые/узлы — всегда доступны
 use truck_geometry::prelude::*; // BSplineCurve, KnotVec, Point3, ..
 
-// ---- B-Rep: опционально через фичу `truck_brep` ----
-#[cfg(feature = "truck_brep")]
+// ---- B-Rep: опционально через фичу `truck-brep` ----
+#[cfg(feature = "truck-brep")]
 use truck_modeling::Solid;
 
-#[cfg(not(feature = "truck_brep"))]
+#[cfg(not(feature = "truck-brep"))]
 #[derive(Debug, Clone)]
 pub struct SolidStub; // лёгкая заглушка, когда truck_modeling не подключён
 
@@ -49,7 +48,7 @@ pub struct Model3D {
 
 /// Геометрическое представление элемента.
 ///
-/// - `Brep` компилируется только с фичей `truck_brep`. Без неё — хранится заглушка,
+/// - `Brep` компилируется только с фичей `truck-brep`. Без неё — хранится заглушка,
 ///   а сериализация всегда пропускает это поле (`#[serde(skip)]`), чтобы не плодить
 ///   бинарные данные в JSON.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,14 +59,17 @@ pub enum ElementGeom {
     /// Свип цилиндрическим профилем радиуса `radius` вдоль 3D-пути
     SweepCylinder { path: Vec<Pt3>, radius: f32 },
 
+    /// Треугольная сетка (позиции и индексы треугольников, в мм)
+    Mesh { positions: Vec<Pt3>, indices: Vec<u32> },
+
     /// Точное тело (B-Rep). В JSON **не** пишем.
     #[serde(skip)]
-    #[cfg(feature = "truck_brep")]
+    #[cfg(feature = "truck-brep")]
     Brep(Solid),
 
-    /// Заглушка для сборки без `truck_brep`
+    /// Заглушка для сборки без `truck-brep`
     #[serde(skip)]
-    #[cfg(not(feature = "truck_brep"))]
+    #[cfg(not(feature = "truck-brep"))]
     Brep(SolidStub),
 }
 
@@ -162,21 +164,21 @@ impl RebarPath {
 
 impl ElementGeom {
     /// Ссылка на B-Rep (есть только при включённой фиче)
-    #[cfg(feature = "truck_brep")]
+    #[cfg(feature = "truck-brep")]
     pub fn as_brep(&self) -> Option<&Solid> {
         match self { ElementGeom::Brep(s) => Some(s), _ => None }
     }
 
     /// Мут-ссылка на B-Rep
-    #[cfg(feature = "truck_brep")]
+    #[cfg(feature = "truck-brep")]
     pub fn as_brep_mut(&mut self) -> Option<&mut Solid> {
         match self { ElementGeom::Brep(s) => Some(s), _ => None }
     }
 
     /// Без фичи — всегда None
-    #[cfg(not(feature = "truck_brep"))]
+    #[cfg(not(feature = "truck-brep"))]
     pub fn as_brep(&self) -> Option<()> { None }
-    #[cfg(not(feature = "truck_brep"))]
+    #[cfg(not(feature = "truck-brep"))]
     pub fn as_brep_mut(&mut self) -> Option<()> { None }
 }
 
@@ -193,9 +195,12 @@ impl Element3D {
             ElementGeom::SweepCylinder { path, radius } => {
                 triangulate_tube(path, *radius, tube_sides, self.xform)
             }
-            #[cfg(feature = "truck_brep")]
+            ElementGeom::Mesh { positions, indices } => {
+                triangulate_from_mesh(positions, indices, self.xform)
+            }
+            #[cfg(feature = "truck-brep")]
             ElementGeom::Brep(_) => Mesh::default(), // TODO: триангуляция B-Rep
-            #[cfg(not(feature = "truck_brep"))]
+            #[cfg(not(feature = "truck-brep"))]
             ElementGeom::Brep(_) => Mesh::default(),
         }
     }
@@ -309,6 +314,20 @@ fn triangulate_tube(path: &Vec<Pt3>, r: f32, sides: u32, xf: [[f32; 4]; 4]) -> M
         base += n * 2;
     }
 
+    m.normals = vec![[0.0, 1.0, 0.0]; m.positions.len()];
+    m
+}
+
+/// Применить трансформацию к уже готовому мешу (вариант ElementGeom::Mesh).
+fn triangulate_from_mesh(positions: &Vec<Pt3>, indices: &Vec<u32>, xf: [[f32; 4]; 4]) -> Mesh {
+    let mut m = Mesh::default();
+    m.positions.reserve(positions.len());
+    for p in positions {
+        m.positions.push(apply_xform([p.x, p.y, p.z], xf));
+    }
+    m.indices.extend_from_slice(indices);
+
+    // простые нормали-заглушки (при необходимости посчитаем позднее)
     m.normals = vec![[0.0, 1.0, 0.0]; m.positions.len()];
     m
 }
