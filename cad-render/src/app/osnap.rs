@@ -1,21 +1,29 @@
-use cad_core::{Document, EntityKind, Pt2, Camera2D, snap_to_grid, sample_entity_nurbs};
+use cad_core::{sample_entity_nurbs, snap_to_grid, Camera2D, Document, EntityKind, Pt2};
 use egui;
 
 /// Тип привязки
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SnapKind { End, Mid, Perp }
+pub enum SnapKind {
+    End,
+    Mid,
+    Perp,
+}
 
 /// Состояние OSNAP
 #[derive(Debug, Clone)]
 pub struct Osnap {
     pub enabled: bool,
-    pub pixel_radius: f32,              // радиус поиска в пикселях
-    pub last: Option<(Pt2, SnapKind)>,  // последний сработавший снап для отрисовки маркера
+    pub pixel_radius: f32,             // радиус поиска в пикселях
+    pub last: Option<(Pt2, SnapKind)>, // последний сработавший снап для отрисовки маркера
 }
 
 impl Default for Osnap {
     fn default() -> Self {
-        Self { enabled: true, pixel_radius: 12.0, last: None }
+        Self {
+            enabled: true,
+            pixel_radius: 12.0,
+            last: None,
+        }
     }
 }
 
@@ -28,7 +36,8 @@ pub fn apply_osnap_or_grid(
     world_pt: Pt2,
 ) -> Pt2 {
     if osnap.enabled {
-        if let Some((_id, sp, _k)) = compute_osnap(doc, camera, rect, world_pt, osnap.pixel_radius) {
+        if let Some((_id, sp, _k)) = compute_osnap(doc, camera, rect, world_pt, osnap.pixel_radius)
+        {
             return sp;
         }
     }
@@ -47,13 +56,18 @@ pub fn compute_osnap(
     let mut best: Option<(u64, Pt2, SnapKind, f32)> = None;
 
     #[inline]
-    fn update_best(best: &mut Option<(u64, Pt2, SnapKind, f32)>, cand: Option<(u64, Pt2, SnapKind, f32)>) {
+    fn update_best(
+        best: &mut Option<(u64, Pt2, SnapKind, f32)>,
+        cand: Option<(u64, Pt2, SnapKind, f32)>,
+    ) {
         if let Some(c) = cand {
             let replace = match *best {
                 None => true,
                 Some((_, _, _, bd)) => c.3 < bd,
             };
-            if replace { *best = Some(c); }
+            if replace {
+                *best = Some(c);
+            }
         }
     }
 
@@ -76,14 +90,17 @@ pub fn compute_osnap(
 
     // кандидат по отрезку (концы, середина, перпендикуляр)
     let consider_seg = |id: u64, a: Pt2, b: Pt2| -> [Option<(u64, Pt2, SnapKind, f32)>; 4] {
-        let mid = Pt2 { x: (a.x + b.x) * 0.5, y: (a.y + b.y) * 0.5 };
+        let mid = Pt2 {
+            x: (a.x + b.x) * 0.5,
+            y: (a.y + b.y) * 0.5,
+        };
         let mut perp: Option<(u64, Pt2, SnapKind, f32)> = None;
         if let Some(pp) = project_point_to_segment(world, a, b) {
             perp = candidate_for_point(camera, rect, id, pp, SnapKind::Perp, world, tol_px);
         }
         [
-            candidate_for_point(camera, rect, id, a,   SnapKind::End, world, tol_px),
-            candidate_for_point(camera, rect, id, b,   SnapKind::End, world, tol_px),
+            candidate_for_point(camera, rect, id, a, SnapKind::End, world, tol_px),
+            candidate_for_point(camera, rect, id, b, SnapKind::End, world, tol_px),
             candidate_for_point(camera, rect, id, mid, SnapKind::Mid, world, tol_px),
             perp,
         ]
@@ -103,11 +120,22 @@ pub fn compute_osnap(
                     }
                 }
             }
-            EntityKind::Arc { center, radius, start_angle, end_angle } => {
+            EntityKind::Arc {
+                center,
+                radius,
+                start_angle,
+                end_angle,
+            } => {
                 let sa = *start_angle;
                 let ea = *end_angle;
-                let a = Pt2 { x: center.x + radius * sa.cos(), y: center.y + radius * sa.sin() };
-                let b = Pt2 { x: center.x + radius * ea.cos(), y: center.y + radius * ea.sin() };
+                let a = Pt2 {
+                    x: center.x + radius * sa.cos(),
+                    y: center.y + radius * sa.sin(),
+                };
+                let b = Pt2 {
+                    x: center.x + radius * ea.cos(),
+                    y: center.y + radius * ea.sin(),
+                };
                 for cand in consider_seg(e.id, a, b) {
                     update_best(&mut best, cand);
                 }
@@ -144,7 +172,7 @@ fn to_screen(cam: &Camera2D, rect: egui::Rect, w: Pt2) -> egui::Pos2 {
     let z = cam.zoom.max(0.01);
     egui::pos2(
         rect.left() + (w.x - cam.pan.x) * z,
-        rect.top()  + (w.y - cam.pan.y) * z,
+        rect.top() + (w.y - cam.pan.y) * z,
     )
 }
 
@@ -153,7 +181,10 @@ fn sample_arc_as_polyline(c: Pt2, r: f32, sa: f32, ea: f32, n: usize) -> Vec<Pt2
     let mut pts = Vec::with_capacity(n + 1);
     for i in 0..=n {
         let t = sa + (ea - sa) * (i as f32) / (n as f32);
-        pts.push(Pt2 { x: c.x + r * t.cos(), y: c.y + r * t.sin() });
+        pts.push(Pt2 {
+            x: c.x + r * t.cos(),
+            y: c.y + r * t.sin(),
+        });
     }
     pts
 }
@@ -162,9 +193,14 @@ fn sample_arc_as_polyline(c: Pt2, r: f32, sa: f32, ea: f32, n: usize) -> Vec<Pt2
 fn project_point_to_segment(p: Pt2, a: Pt2, b: Pt2) -> Option<Pt2> {
     let vx = b.x - a.x;
     let vy = b.y - a.y;
-    let len2 = vx*vx + vy*vy;
-    if len2 == 0.0 { return Some(a); }
-    let t = ((p.x - a.x)*vx + (p.y - a.y)*vy) / len2;
+    let len2 = vx * vx + vy * vy;
+    if len2 == 0.0 {
+        return Some(a);
+    }
+    let t = ((p.x - a.x) * vx + (p.y - a.y) * vy) / len2;
     let t = t.clamp(0.0, 1.0);
-    Some(Pt2 { x: a.x + vx*t, y: a.y + vy*t })
+    Some(Pt2 {
+        x: a.x + vx * t,
+        y: a.y + vy * t,
+    })
 }

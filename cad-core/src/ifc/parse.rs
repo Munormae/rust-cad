@@ -6,8 +6,8 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
-    static ref RE_ID:    Regex = Regex::new(r"^#(\d+)\s*=\s*([A-Z0-9_]+)\((.*)\);$").unwrap();
-    static ref RE_NUMS:  Regex = Regex::new(r"[-+]?\d*\.?\d+(?:[Ee][-+]?\d+)?").unwrap();
+    static ref RE_ID: Regex = Regex::new(r"^#(\d+)\s*=\s*([A-Z0-9_]+)\((.*)\);$").unwrap();
+    static ref RE_NUMS: Regex = Regex::new(r"[-+]?\d*\.?\d+(?:[Ee][-+]?\d+)?").unwrap();
     static ref RE_IDREF: Regex = Regex::new(r"#(\d+)").unwrap();
 }
 
@@ -50,19 +50,25 @@ pub fn parse_db(text: &str) -> Result<Db> {
 
             let ent = match kind {
                 "IFCSIUNIT" | "IFCUNITASSIGNMENT" => parse_units(args),
-                "IFCCARTESIANPOINT"               => parse_cartesian_point(args),
-                "IFCDIRECTION"                    => parse_direction(args),
-                "IFCPOLYLINE"                     => parse_polyline(args),
-                "IFCRECTANGLEPROFILEDEF"          => parse_rectangle_profile(args),
-                "IFCARBITRARYCLOSEDPROFILEDEF"    => parse_arbitrary_profile(args),
-                "IFCAXIS2PLACEMENT3D"             => parse_axis2placement3d(args),
-                "IFCLOCALPLACEMENT"               => parse_local_placement(args),
-                "IFCEXTRUDEDAREASOLID"            => parse_extruded(args),
-                "IFCSWEPTDISKSOLID"               => parse_swept_disk(args),
-                "IFCPRODUCT" | "IFCBUILDINGELEMENT" | "IFCCOLUMN" | "IFCBEAM" | "IFCPLATE" |
-                "IFCSLAB" | "IFCWALL" | "IFCMEMBER" | "IFCREINFORCINGBAR" | "IFCREINFORCINGELEMENT" => {
-                    parse_product(args).unwrap_or(Entity::Unknown)
-                }
+                "IFCCARTESIANPOINT" => parse_cartesian_point(args),
+                "IFCDIRECTION" => parse_direction(args),
+                "IFCPOLYLINE" => parse_polyline(args),
+                "IFCRECTANGLEPROFILEDEF" => parse_rectangle_profile(args),
+                "IFCARBITRARYCLOSEDPROFILEDEF" => parse_arbitrary_profile(args),
+                "IFCAXIS2PLACEMENT3D" => parse_axis2placement3d(args),
+                "IFCLOCALPLACEMENT" => parse_local_placement(args),
+                "IFCEXTRUDEDAREASOLID" => parse_extruded(args),
+                "IFCSWEPTDISKSOLID" => parse_swept_disk(args),
+                "IFCPRODUCT"
+                | "IFCBUILDINGELEMENT"
+                | "IFCCOLUMN"
+                | "IFCBEAM"
+                | "IFCPLATE"
+                | "IFCSLAB"
+                | "IFCWALL"
+                | "IFCMEMBER"
+                | "IFCREINFORCINGBAR"
+                | "IFCREINFORCINGELEMENT" => parse_product(args).unwrap_or(Entity::Unknown),
                 "IFCSHAPEREPRESENTATION" | "IFCSHAPEMODEL" => parse_shape_rep(args),
                 _ => Entity::Unknown,
             };
@@ -75,9 +81,13 @@ pub fn parse_db(text: &str) -> Result<Db> {
 
 fn parse_units(args: &str) -> Entity {
     if args.contains(".LENGTHUNIT.") {
-        if args.contains(".MILLI.") { Entity::UnitAssignment(UnitLen::MilliMetre) }
-        else if args.contains(".METRE.") { Entity::UnitAssignment(UnitLen::Metre) }
-        else { Entity::UnitAssignment(UnitLen::Metre) }
+        if args.contains(".MILLI.") {
+            Entity::UnitAssignment(UnitLen::MilliMetre)
+        } else if args.contains(".METRE.") {
+            Entity::UnitAssignment(UnitLen::Metre)
+        } else {
+            Entity::UnitAssignment(UnitLen::Metre)
+        }
     } else {
         Entity::Unknown
     }
@@ -120,50 +130,65 @@ fn parse_axis2placement3d(args: &str) -> Entity {
     // ( #location, #axis(z)? , #refDirection(x)? )
     let ids = all_ids(args);
     let location = ids.get(0).copied().unwrap_or(Idx(0));
-    let dir_z    = ids.get(1).copied();
-    let dir_x    = ids.get(2).copied();
-    Entity::Axis2Placement3D { location, dir_z, dir_x }
+    let dir_z = ids.get(1).copied();
+    let dir_x = ids.get(2).copied();
+    Entity::Axis2Placement3D {
+        location,
+        dir_z,
+        dir_x,
+    }
 }
 
 fn parse_local_placement(args: &str) -> Entity {
     // ( $ | #rel, #axis2placement3d )
     let ids = all_ids(args);
-    let rel       = ids.get(0).copied();
+    let rel = ids.get(0).copied();
     let placement = ids.get(1).copied().unwrap_or(Idx(0));
     Entity::LocalPlacement { rel, placement }
 }
 
 fn parse_extruded(args: &str) -> Entity {
     // ( #profile, #axis?, #direction, Depth ) — сигнатуры разнятся
-    let ids  = all_ids(args);
+    let ids = all_ids(args);
     let nums = all_nums(args);
 
     let profile = *ids.get(0).unwrap_or(&Idx(0));
-    let axis    = ids.get(1).copied();
-    let dir     = ids.get(2).copied();
-    let depth   = *nums.last().unwrap_or(&100.0);
+    let axis = ids.get(1).copied();
+    let dir = ids.get(2).copied();
+    let depth = *nums.last().unwrap_or(&100.0);
 
-    Entity::ExtrudedAreaSolid { profile, axis, depth, dir }
+    Entity::ExtrudedAreaSolid {
+        profile,
+        axis,
+        depth,
+        dir,
+    }
 }
 
 fn parse_swept_disk(args: &str) -> Entity {
     // ( #directrix, radius, [inner]? )
-    let ids  = all_ids(args);
+    let ids = all_ids(args);
     let nums = all_nums(args);
 
     let directrix = *ids.get(0).unwrap_or(&Idx(0));
-    let radius    = *nums.get(0).unwrap_or(&8.0);
+    let radius = *nums.get(0).unwrap_or(&8.0);
     Entity::SweptDiskSolid { directrix, radius }
 }
 
 fn parse_product(args: &str) -> Option<Entity> {
     // (..., ObjectPlacement, Representation, ... )
     let ids = all_ids(args);
-    let op  = ids.get(0).copied();
+    let op = ids.get(0).copied();
     let rep = ids.get(1).copied();
-    Some(Entity::Product { object_placement: op, rep, name: None })
+    Some(Entity::Product {
+        object_placement: op,
+        rep,
+        name: None,
+    })
 }
 
 fn parse_shape_rep(args: &str) -> Entity {
-    Entity::ShapeRep { items: all_ids(args) }
+    Entity::ShapeRep {
+        items: all_ids(args),
+    }
 }

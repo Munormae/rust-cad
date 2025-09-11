@@ -26,7 +26,9 @@ pub struct Pt3 {
     pub z: f32,
 }
 impl Pt3 {
-    pub fn new(x: f32, y: f32, z: f32) -> Self { Self { x, y, z } }
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self { x, y, z }
+    }
 }
 
 pub type Id = u64;
@@ -54,13 +56,19 @@ pub struct Model3D {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ElementGeom {
     /// Экструзия 2D-профиля по +Z на `height` (мм)
-    Extrusion { profile: Vec<crate::Pt2>, height: f32 },
+    Extrusion {
+        profile: Vec<crate::Pt2>,
+        height: f32,
+    },
 
     /// Свип цилиндрическим профилем радиуса `radius` вдоль 3D-пути
     SweepCylinder { path: Vec<Pt3>, radius: f32 },
 
     /// Треугольная сетка (позиции и индексы треугольников, в мм)
-    Mesh { positions: Vec<Pt3>, indices: Vec<u32> },
+    Mesh {
+        positions: Vec<Pt3>,
+        indices: Vec<u32>,
+    },
 
     /// Точное тело (B-Rep). В JSON **не** пишем.
     #[serde(skip)]
@@ -115,17 +123,19 @@ pub enum RebarPath {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Element3D {
     pub id: Id,
-    pub name: String,          // марка/тип
-    pub xform: [[f32; 4]; 4],  // row-major 4x4
-    pub geom: ElementGeom,     // тело
+    pub name: String,         // марка/тип
+    pub xform: [[f32; 4]; 4], // row-major 4x4
+    pub geom: ElementGeom,    // тело
     pub material: MaterialId,
-    pub rebars: Vec<Rebar>,    // арматура
+    pub rebars: Vec<Rebar>, // арматура
     pub meta: Meta,
 }
 
 /// Произвольные свойства
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct Meta { pub props: BTreeMap<String, String> }
+pub struct Meta {
+    pub props: BTreeMap<String, String>,
+}
 
 // ===================== Конвертеры в Truck =====================
 
@@ -145,12 +155,16 @@ impl RebarPath {
                 let mut knots = vec![0.0; degree + 1];
                 if n > degree + 1 {
                     let inner = n - degree - 1;
-                    for i in 1..=inner { knots.push(i as f64 / (inner as f64 + 1.0)); }
+                    for i in 1..=inner {
+                        knots.push(i as f64 / (inner as f64 + 1.0));
+                    }
                 }
                 knots.extend(std::iter::repeat(1.0).take(degree + 1));
                 BSplineCurve::new(KnotVec::from(knots), ctrl)
             }
-            RebarPath::Nurbs { knots, ctrl_pts, .. } => {
+            RebarPath::Nurbs {
+                knots, ctrl_pts, ..
+            } => {
                 // Truck хранит степень внутри кривой, здесь достаточно узлов и КТ.
                 let ctrl: Vec<Point3> = ctrl_pts
                     .iter()
@@ -166,20 +180,30 @@ impl ElementGeom {
     /// Ссылка на B-Rep (есть только при включённой фиче)
     #[cfg(feature = "truck-brep")]
     pub fn as_brep(&self) -> Option<&Solid> {
-        match self { ElementGeom::Brep(s) => Some(s), _ => None }
+        match self {
+            ElementGeom::Brep(s) => Some(s),
+            _ => None,
+        }
     }
 
     /// Мут-ссылка на B-Rep
     #[cfg(feature = "truck-brep")]
     pub fn as_brep_mut(&mut self) -> Option<&mut Solid> {
-        match self { ElementGeom::Brep(s) => Some(s), _ => None }
+        match self {
+            ElementGeom::Brep(s) => Some(s),
+            _ => None,
+        }
     }
 
     /// Без фичи — всегда None
     #[cfg(not(feature = "truck-brep"))]
-    pub fn as_brep(&self) -> Option<()> { None }
+    pub fn as_brep(&self) -> Option<()> {
+        None
+    }
     #[cfg(not(feature = "truck-brep"))]
-    pub fn as_brep_mut(&mut self) -> Option<()> { None }
+    pub fn as_brep_mut(&mut self) -> Option<()> {
+        None
+    }
 }
 
 // ===================== Триангуляция для рендера/экспорта =====================
@@ -207,16 +231,18 @@ impl Element3D {
 }
 
 fn apply_xform(p: [f32; 3], m: [[f32; 4]; 4]) -> [f32; 3] {
-    let x = p[0]*m[0][0] + p[1]*m[0][1] + p[2]*m[0][2] + m[0][3];
-    let y = p[0]*m[1][0] + p[1]*m[1][1] + p[2]*m[1][2] + m[1][3];
-    let z = p[0]*m[2][0] + p[1]*m[2][1] + p[2]*m[2][2] + m[2][3];
+    let x = p[0] * m[0][0] + p[1] * m[0][1] + p[2] * m[0][2] + m[0][3];
+    let y = p[0] * m[1][0] + p[1] * m[1][1] + p[2] * m[1][2] + m[1][3];
+    let z = p[0] * m[2][0] + p[1] * m[2][1] + p[2] * m[2][2] + m[2][3];
     [x, y, z]
 }
 
 fn triangulate_extrusion(poly: &Vec<crate::Pt2>, h: f32, xf: [[f32; 4]; 4]) -> Mesh {
     // MVP: предполагаем, что poly — замкнутый и без самопересечений.
     let mut m = Mesh::default();
-    if poly.len() < 2 { return m; }
+    if poly.len() < 2 {
+        return m;
+    }
 
     // вершины: нижний и верхний контуры
     let base_idx = 0u32;
@@ -241,7 +267,8 @@ fn triangulate_extrusion(poly: &Vec<crate::Pt2>, h: f32, xf: [[f32; 4]; 4]) -> M
     // крышки (фан к нулевому)
     // низ
     for i in 1..(n - 1) {
-        m.indices.extend_from_slice(&[base_idx, base_idx + i, base_idx + i + 1]);
+        m.indices
+            .extend_from_slice(&[base_idx, base_idx + i, base_idx + i + 1]);
     }
     // верх
     let top = base_idx + n;
@@ -257,7 +284,9 @@ fn triangulate_extrusion(poly: &Vec<crate::Pt2>, h: f32, xf: [[f32; 4]; 4]) -> M
 fn triangulate_tube(path: &Vec<Pt3>, r: f32, sides: u32, xf: [[f32; 4]; 4]) -> Mesh {
     // MVP: набор колец перпендикулярно оси звена, без скруглений в коленах.
     let mut m = Mesh::default();
-    if path.len() < 2 || sides < 3 { return m; }
+    if path.len() < 2 || sides < 3 {
+        return m;
+    }
 
     let sides = sides as usize;
     let two_pi = std::f32::consts::TAU;
@@ -266,7 +295,7 @@ fn triangulate_tube(path: &Vec<Pt3>, r: f32, sides: u32, xf: [[f32; 4]; 4]) -> M
     let mut ring = Vec::with_capacity(sides);
     for i in 0..sides {
         let ang = two_pi * (i as f32) / (sides as f32);
-        ring.push([ang.cos()*r, ang.sin()*r]); // (x,y) в перпендикулярной плоскости
+        ring.push([ang.cos() * r, ang.sin() * r]); // (x,y) в перпендикулярной плоскости
     }
 
     // строим вдоль звеньев
@@ -276,25 +305,35 @@ fn triangulate_tube(path: &Vec<Pt3>, r: f32, sides: u32, xf: [[f32; 4]; 4]) -> M
         let p1 = path[seg + 1];
 
         let dir = {
-            let dx = p1.x - p0.x; let dy = p1.y - p0.y; let dz = p1.z - p0.z;
-            let len = (dx*dx + dy*dy + dz*dz).sqrt().max(1e-6);
-            [dx/len, dy/len, dz/len]
+            let dx = p1.x - p0.x;
+            let dy = p1.y - p0.y;
+            let dz = p1.z - p0.z;
+            let len = (dx * dx + dy * dy + dz * dz).sqrt().max(1e-6);
+            [dx / len, dy / len, dz / len]
         };
 
         // две перпендикулярные оси к dir
-        let up_ref = if dir[2].abs() < 0.9 { [0.0, 0.0, 1.0] } else { [0.0, 1.0, 0.0] };
+        let up_ref = if dir[2].abs() < 0.9 {
+            [0.0, 0.0, 1.0]
+        } else {
+            [0.0, 1.0, 0.0]
+        };
         let side = cross(up_ref, dir);
         let side_n = norm(side);
         let up2 = cross(dir, side_n);
 
         // два кольца вершин (начало и конец сегмента)
         for k in 0..2 {
-            let base_pt = if k == 0 { [p0.x, p0.y, p0.z] } else { [p1.x, p1.y, p1.z] };
+            let base_pt = if k == 0 {
+                [p0.x, p0.y, p0.z]
+            } else {
+                [p1.x, p1.y, p1.z]
+            };
             for xy in &ring {
                 let v = [
-                    base_pt[0] + side_n[0]*xy[0] + up2[0]*xy[1],
-                    base_pt[1] + side_n[1]*xy[0] + up2[1]*xy[1],
-                    base_pt[2] + side_n[2]*xy[0] + up2[2]*xy[1],
+                    base_pt[0] + side_n[0] * xy[0] + up2[0] * xy[1],
+                    base_pt[1] + side_n[1] * xy[0] + up2[1] * xy[1],
+                    base_pt[2] + side_n[2] * xy[0] + up2[2] * xy[1],
                 ];
                 m.positions.push(apply_xform(v, xf));
             }
@@ -307,8 +346,12 @@ fn triangulate_tube(path: &Vec<Pt3>, r: f32, sides: u32, xf: [[f32; 4]; 4]) -> M
         for i in 0..n {
             let i_next = (i + 1) % n;
             m.indices.extend_from_slice(&[
-                i0 + i, i0 + i_next, i1 + i_next,
-                i0 + i, i1 + i_next, i1 + i,
+                i0 + i,
+                i0 + i_next,
+                i1 + i_next,
+                i0 + i,
+                i1 + i_next,
+                i1 + i,
             ]);
         }
         base += n * 2;
@@ -333,9 +376,13 @@ fn triangulate_from_mesh(positions: &Vec<Pt3>, indices: &Vec<u32>, xf: [[f32; 4]
 }
 
 fn cross(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
-    [ a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0] ]
+    [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    ]
 }
 fn norm(v: [f32; 3]) -> [f32; 3] {
-    let l = (v[0]*v[0]+v[1]*v[1]+v[2]*v[2]).sqrt().max(1e-6);
-    [v[0]/l, v[1]/l, v[2]/l]
+    let l = (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt().max(1e-6);
+    [v[0] / l, v[1] / l, v[2] / l]
 }

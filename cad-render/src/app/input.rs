@@ -1,5 +1,5 @@
-use egui::{Ui, Response};
 use crate::app::Tool;
+use egui::{Response, Ui};
 
 /// Детект: сейчас панорамируем?
 pub fn is_pan_drag(ui: &Ui, resp: &Response, tool: Tool) -> bool {

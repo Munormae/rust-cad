@@ -9,8 +9,12 @@ pub fn read_p21_entities(text: &str) -> Vec<String> {
     let mut cur = String::new();
     for line in text.lines() {
         let mut l = line.trim();
-        if l.starts_with("//") { continue; }
-        if l.is_empty() { continue; }
+        if l.starts_with("//") {
+            continue;
+        }
+        if l.is_empty() {
+            continue;
+        }
         // убираем комментарии в конце строки, если // обнаружен
         if let Some(idx) = l.find("//") {
             l = &l[..idx].trim_end();

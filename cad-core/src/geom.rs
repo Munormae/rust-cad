@@ -10,14 +10,27 @@ pub struct Pt2 {
     pub y: f32,
 }
 impl Pt2 {
-    pub fn new(x: f32, y: f32) -> Self { Self { x, y } }
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum EntityKind {
-    LineSeg { a: Pt2, b: Pt2 },
-    Arc { center: Pt2, radius: f32, start_angle: f32, end_angle: f32 },
-    Polyline { pts: Vec<Pt2>, closed: bool },
+    LineSeg {
+        a: Pt2,
+        b: Pt2,
+    },
+    Arc {
+        center: Pt2,
+        radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+    },
+    Polyline {
+        pts: Vec<Pt2>,
+        closed: bool,
+    },
 
     /// 2D NURBS/BSpline
     NurbsCurve2D {
@@ -50,8 +63,14 @@ pub struct Layer {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Style { pub stroke_px: f32 }
-impl Default for Style { fn default() -> Self { Self { stroke_px: 1.5 } } }
+pub struct Style {
+    pub stroke_px: f32,
+}
+impl Default for Style {
+    fn default() -> Self {
+        Self { stroke_px: 1.5 }
+    }
+}
 
 /// Демонстрационный BSpline (без весов)
 pub fn demo_nurbs() -> BSplineCurve<Point2<f64>> {

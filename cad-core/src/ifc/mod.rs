@@ -1,6 +1,6 @@
-mod scanner;
 mod ast;
-mod parse;
 mod import;
+mod parse;
+mod scanner;
 
 pub use import::import_ifc;

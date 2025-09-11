@@ -23,6 +23,10 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "rust-cad",
         opts,
-        Box::new(|_cc| Ok(Box::new(EguiApp { app: AppState::default() }))),
+        Box::new(|_cc| {
+            Ok(Box::new(EguiApp {
+                app: AppState::default(),
+            }))
+        }),
     )
 }

@@ -1,14 +1,12 @@
 // cad-core/src/ifc/import.rs
-use anyhow::{anyhow, Result};
-use std::vec;
-use std::format;
 use crate::Pt2;
+use anyhow::{anyhow, Result};
+use std::format;
+use std::vec;
 
 // 3D-модель вашего ядра.
 // Если у вас другие имена — поправьте пути/типы ниже.
-use crate::model3d::{
-    Element3D, ElementGeom, Meta, Model3D, Project3D, Pt3,
-};
+use crate::model3d::{Element3D, ElementGeom, Meta, Model3D, Project3D, Pt3};
 
 use crate::ifc::ast::{Db, Entity, Idx, Point3};
 use crate::ifc::parse::parse_db;
@@ -30,7 +28,12 @@ pub fn import_ifc(path: &str) -> Result<Project3D> {
     // MVP: читаем только твердотельную геометрию, без учёта иерархий продуктов
     for (id, ent) in db.map.iter() {
         match ent {
-            Entity::ExtrudedAreaSolid { profile, axis, depth, .. } => {
+            Entity::ExtrudedAreaSolid {
+                profile,
+                axis,
+                depth,
+                ..
+            } => {
                 if let Some(geom) = build_extrusion(&db, *profile, *depth, s)? {
                     let xform = axis_to_matrix(&db, *axis, s);
                     model.elements.push(Element3D {
@@ -63,7 +66,9 @@ pub fn import_ifc(path: &str) -> Result<Project3D> {
         }
     }
 
-    Ok(Project3D { models: vec![model] })
+    Ok(Project3D {
+        models: vec![model],
+    })
 }
 
 const ID4: [[f32; 4]; 4] = [
@@ -112,11 +117,17 @@ fn build_extrusion(db: &Db, profile: Idx, depth: f64, s: f64) -> Result<Option<E
                 Pt2::new(0.0, y),
                 Pt2::new(0.0, 0.0),
             ];
-            ElementGeom::Extrusion { profile: poly, height }
+            ElementGeom::Extrusion {
+                profile: poly,
+                height,
+            }
         }
         Some(Entity::ArbitraryClosedProfile { poly }) => {
             let pts = polyline_points_mm(db, *poly, s)?;
-            ElementGeom::Extrusion { profile: pts, height }
+            ElementGeom::Extrusion {
+                profile: pts,
+                height,
+            }
         }
         _ => return Ok(None),
     };

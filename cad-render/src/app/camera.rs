@@ -10,10 +10,10 @@ impl AppState {
     /// Мир → экран
     #[inline]
     pub fn to_screen(&self, world: Pt2, rect: egui::Rect) -> egui::Pos2 {
-        let z   = self.doc.camera.zoom.max(0.01);
+        let z = self.doc.camera.zoom.max(0.01);
         let pan = self.doc.camera.pan;
         egui::pos2(
-            rect.left()   + (world.x - pan.x) * z,
+            rect.left() + (world.x - pan.x) * z,
             rect.bottom() - (world.y - pan.y) * z, // инверсия Y
         )
     }
@@ -21,10 +21,10 @@ impl AppState {
     /// Экран → мир
     #[inline]
     pub fn from_screen(&self, screen: egui::Pos2, rect: egui::Rect) -> Pt2 {
-        let z   = self.doc.camera.zoom.max(0.01);
+        let z = self.doc.camera.zoom.max(0.01);
         let pan = self.doc.camera.pan;
         Pt2::new(
-            (screen.x - rect.left())   / z + pan.x,
+            (screen.x - rect.left()) / z + pan.x,
             (rect.bottom() - screen.y) / z + pan.y, // инверсия Y
         )
     }
@@ -34,10 +34,12 @@ impl AppState {
     /// Колесо мыши — зум к курсору
     pub fn handle_zoom(&mut self, response: &egui::Response, rect: egui::Rect) {
         let scroll_y = response.ctx.input(|i| i.raw_scroll_delta.y);
-        if scroll_y.abs() <= 0.0 { return; }
+        if scroll_y.abs() <= 0.0 {
+            return;
+        }
 
         if let Some(mouse) = response.hover_pos() {
-            let factor   = (scroll_y * 0.0015).exp().clamp(0.25, 4.0);
+            let factor = (scroll_y * 0.0015).exp().clamp(0.25, 4.0);
             self.zoom_by(factor, Some((mouse, rect)));
         }
     }
@@ -51,7 +53,7 @@ impl AppState {
             // зум к курсору с учётом инверсии Y
             let world_at_mouse = self.from_screen(mouse, rect);
             let pan_new = Pt2::new(
-                world_at_mouse.x - (mouse.x - rect.left())   / new_zoom,
+                world_at_mouse.x - (mouse.x - rect.left()) / new_zoom,
                 world_at_mouse.y - (rect.bottom() - mouse.y) / new_zoom,
             );
             self.doc.camera.pan = pan_new;
@@ -63,8 +65,8 @@ impl AppState {
     pub fn reset_zoom(&mut self, rect: egui::Rect) {
         let center_world = self.from_screen(rect.center(), rect);
         self.doc.camera.zoom = 1.0;
-        self.doc.camera.pan  = Pt2::new(
-            center_world.x - rect.width()  / 2.0,
+        self.doc.camera.pan = Pt2::new(
+            center_world.x - rect.width() / 2.0,
             center_world.y - rect.height() / 2.0,
         );
     }
@@ -75,16 +77,16 @@ impl AppState {
             let margin = 20.0;
             let w = (max.x - min.x).max(1.0) + margin * 2.0;
             let h = (max.y - min.y).max(1.0) + margin * 2.0;
-            let z_x = rect.width()  / w;
+            let z_x = rect.width() / w;
             let z_y = rect.height() / h;
-            let z   = z_x.min(z_y).clamp(0.02, 500.0);
+            let z = z_x.min(z_y).clamp(0.02, 500.0);
             self.doc.camera.zoom = z;
 
             // центрируем
             let cx = (min.x + max.x) * 0.5;
             let cy = (min.y + max.y) * 0.5;
             self.doc.camera.pan = Pt2::new(
-                cx - rect.width()  / (2.0 * z),
+                cx - rect.width() / (2.0 * z),
                 cy - rect.height() / (2.0 * z),
             );
         }

@@ -29,23 +29,37 @@ impl AppState {
         for e in &self.doc.entities {
             match &e.kind {
                 EntityKind::LineSeg { a, b } => {
-                    if let Some(c) = consider_seg(e.id, *a, *b) { update_best(&mut best, c); }
+                    if let Some(c) = consider_seg(e.id, *a, *b) {
+                        update_best(&mut best, c);
+                    }
                 }
                 EntityKind::Polyline { pts, .. } => {
                     for w in pts.windows(2) {
-                        if let Some(c) = consider_seg(e.id, w[0], w[1]) { update_best(&mut best, c); }
+                        if let Some(c) = consider_seg(e.id, w[0], w[1]) {
+                            update_best(&mut best, c);
+                        }
                     }
                 }
-                EntityKind::Arc { center, radius, start_angle, end_angle } => {
-                    let poly = sample_arc_as_polyline(*center, *radius, *start_angle, *end_angle, 64);
+                EntityKind::Arc {
+                    center,
+                    radius,
+                    start_angle,
+                    end_angle,
+                } => {
+                    let poly =
+                        sample_arc_as_polyline(*center, *radius, *start_angle, *end_angle, 64);
                     for w in poly.windows(2) {
-                        if let Some(c) = consider_seg(e.id, w[0], w[1]) { update_best(&mut best, c); }
+                        if let Some(c) = consider_seg(e.id, w[0], w[1]) {
+                            update_best(&mut best, c);
+                        }
                     }
                 }
                 EntityKind::NurbsCurve2D { .. } => {
                     let poly = cad_core::sample_entity_nurbs(e, 128).unwrap_or_default();
                     for w in poly.windows(2) {
-                        if let Some(c) = consider_seg(e.id, w[0], w[1]) { update_best(&mut best, c); }
+                        if let Some(c) = consider_seg(e.id, w[0], w[1]) {
+                            update_best(&mut best, c);
+                        }
                     }
                 }
                 // Пик текста — по точке вставки
@@ -80,16 +94,24 @@ impl AppState {
                 }
                 EntityKind::Polyline { pts, .. } => {
                     if crossing {
-                        pts.windows(2).any(|w| segment_intersects_rect(w[0], w[1], min, max))
+                        pts.windows(2)
+                            .any(|w| segment_intersects_rect(w[0], w[1], min, max))
                             || pts.iter().any(|p| rect_contains_point(min, max, *p))
                     } else {
                         pts.iter().all(|p| rect_contains_point(min, max, *p))
                     }
                 }
-                EntityKind::Arc { center, radius, start_angle, end_angle } => {
-                    let poly = sample_arc_as_polyline(*center, *radius, *start_angle, *end_angle, 64);
+                EntityKind::Arc {
+                    center,
+                    radius,
+                    start_angle,
+                    end_angle,
+                } => {
+                    let poly =
+                        sample_arc_as_polyline(*center, *radius, *start_angle, *end_angle, 64);
                     if crossing {
-                        poly.windows(2).any(|w| segment_intersects_rect(w[0], w[1], min, max))
+                        poly.windows(2)
+                            .any(|w| segment_intersects_rect(w[0], w[1], min, max))
                             || poly.iter().any(|p| rect_contains_point(min, max, *p))
                     } else {
                         poly.iter().all(|p| rect_contains_point(min, max, *p))
@@ -98,7 +120,8 @@ impl AppState {
                 EntityKind::NurbsCurve2D { .. } => {
                     let poly = cad_core::sample_entity_nurbs(e, 128).unwrap_or_default();
                     if crossing {
-                        poly.windows(2).any(|w| segment_intersects_rect(w[0], w[1], min, max))
+                        poly.windows(2)
+                            .any(|w| segment_intersects_rect(w[0], w[1], min, max))
                             || poly.iter().any(|p| rect_contains_point(min, max, *p))
                     } else {
                         poly.iter().all(|p| rect_contains_point(min, max, *p))
@@ -107,7 +130,9 @@ impl AppState {
                 // Текст попадает, если его точка вставки внутри прямоугольника
                 EntityKind::Text { pos, .. } => rect_contains_point(min, max, *pos),
             };
-            if hit { self.selection.add(e.id); }
+            if hit {
+                self.selection.add(e.id);
+            }
         }
     }
 
@@ -119,20 +144,41 @@ impl AppState {
 
         let acc = |p: Pt2, min: &mut Pt2, max: &mut Pt2, any: &mut bool| {
             if p.x.is_finite() && p.y.is_finite() {
-                if p.x < min.x { min.x = p.x; }
-                if p.y < min.y { min.y = p.y; }
-                if p.x > max.x { max.x = p.x; }
-                if p.y > max.y { max.y = p.y; }
+                if p.x < min.x {
+                    min.x = p.x;
+                }
+                if p.y < min.y {
+                    min.y = p.y;
+                }
+                if p.x > max.x {
+                    max.x = p.x;
+                }
+                if p.y > max.y {
+                    max.y = p.y;
+                }
                 *any = true;
             }
         };
 
         for e in &self.doc.entities {
             match &e.kind {
-                EntityKind::LineSeg { a, b } => { acc(*a, &mut min, &mut max, &mut any); acc(*b, &mut min, &mut max, &mut any); }
-                EntityKind::Polyline { pts, .. } => { for &p in pts { acc(p, &mut min, &mut max, &mut any); } }
-                EntityKind::Arc { center, radius, start_angle, end_angle } => {
-                    for p in sample_arc_as_polyline(*center, *radius, *start_angle, *end_angle, 64) {
+                EntityKind::LineSeg { a, b } => {
+                    acc(*a, &mut min, &mut max, &mut any);
+                    acc(*b, &mut min, &mut max, &mut any);
+                }
+                EntityKind::Polyline { pts, .. } => {
+                    for &p in pts {
+                        acc(p, &mut min, &mut max, &mut any);
+                    }
+                }
+                EntityKind::Arc {
+                    center,
+                    radius,
+                    start_angle,
+                    end_angle,
+                } => {
+                    for p in sample_arc_as_polyline(*center, *radius, *start_angle, *end_angle, 64)
+                    {
                         acc(p, &mut min, &mut max, &mut any);
                     }
                 }
@@ -141,11 +187,17 @@ impl AppState {
                         acc(p, &mut min, &mut max, &mut any);
                     }
                 }
-                EntityKind::Text { pos, .. } => { acc(*pos, &mut min, &mut max, &mut any); }
+                EntityKind::Text { pos, .. } => {
+                    acc(*pos, &mut min, &mut max, &mut any);
+                }
             }
         }
 
-        if any { Some((min, max)) } else { None }
+        if any {
+            Some((min, max))
+        } else {
+            None
+        }
     }
 }
 
@@ -153,12 +205,15 @@ impl AppState {
 
 #[inline]
 fn project_point_to_segment(p: Pt2, a: Pt2, b: Pt2) -> Option<Pt2> {
-    let vx = b.x - a.x; let vy = b.y - a.y;
-    let len2 = vx*vx + vy*vy;
-    if len2 == 0.0 { return Some(a); }
-    let t = ((p.x - a.x)*vx + (p.y - a.y)*vy) / len2;
+    let vx = b.x - a.x;
+    let vy = b.y - a.y;
+    let len2 = vx * vx + vy * vy;
+    if len2 == 0.0 {
+        return Some(a);
+    }
+    let t = ((p.x - a.x) * vx + (p.y - a.y) * vy) / len2;
     let t = t.clamp(0.0, 1.0);
-    Some(Pt2::new(a.x + vx*t, a.y + vy*t))
+    Some(Pt2::new(a.x + vx * t, a.y + vy * t))
 }
 
 #[inline]
@@ -181,24 +236,40 @@ fn segment_inside_rect(a: Pt2, b: Pt2, min: Pt2, max: Pt2) -> bool {
 }
 #[inline]
 fn segment_intersects_rect(a: Pt2, b: Pt2, min: Pt2, max: Pt2) -> bool {
-    if (a.x.max(b.x) < min.x) || (a.x.min(b.x) > max.x) || (a.y.max(b.y) < min.y) || (a.y.min(b.y) > max.y) {
+    if (a.x.max(b.x) < min.x)
+        || (a.x.min(b.x) > max.x)
+        || (a.y.max(b.y) < min.y)
+        || (a.y.min(b.y) > max.y)
+    {
         return false;
     }
     let r1 = (Pt2 { x: min.x, y: min.y }, Pt2 { x: max.x, y: min.y });
     let r2 = (Pt2 { x: max.x, y: min.y }, Pt2 { x: max.x, y: max.y });
     let r3 = (Pt2 { x: max.x, y: max.y }, Pt2 { x: min.x, y: max.y });
     let r4 = (Pt2 { x: min.x, y: max.y }, Pt2 { x: min.x, y: min.y });
-    seg_seg(a, b, r1.0, r1.1) || seg_seg(a, b, r2.0, r2.1) || seg_seg(a, b, r3.0, r3.1) || seg_seg(a, b, r4.0, r4.1)
+    seg_seg(a, b, r1.0, r1.1)
+        || seg_seg(a, b, r2.0, r2.1)
+        || seg_seg(a, b, r3.0, r3.1)
+        || seg_seg(a, b, r4.0, r4.1)
 }
 #[inline]
 fn seg_seg(a: Pt2, b: Pt2, c: Pt2, d: Pt2) -> bool {
-    fn orient(a: Pt2, b: Pt2, c: Pt2) -> f32 { (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x) }
+    fn orient(a: Pt2, b: Pt2, c: Pt2) -> f32 {
+        (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
+    }
     fn on_seg(a: Pt2, b: Pt2, p: Pt2) -> bool {
         p.x >= a.x.min(b.x) && p.x <= a.x.max(b.x) && p.y >= a.y.min(b.y) && p.y <= a.y.max(b.y)
     }
-    let o1 = orient(a, b, c); let o2 = orient(a, b, d);
-    let o3 = orient(c, d, a); let o4 = orient(c, d, b);
-    if (o1 == 0.0 && on_seg(a, b, c)) || (o2 == 0.0 && on_seg(a, b, d)) ||
-        (o3 == 0.0 && on_seg(c, d, a)) || (o4 == 0.0 && on_seg(c, d, b)) { return true; }
+    let o1 = orient(a, b, c);
+    let o2 = orient(a, b, d);
+    let o3 = orient(c, d, a);
+    let o4 = orient(c, d, b);
+    if (o1 == 0.0 && on_seg(a, b, c))
+        || (o2 == 0.0 && on_seg(a, b, d))
+        || (o3 == 0.0 && on_seg(c, d, a))
+        || (o4 == 0.0 && on_seg(c, d, b))
+    {
+        return true;
+    }
     (o1 > 0.0) != (o2 > 0.0) && (o3 > 0.0) != (o4 > 0.0)
 }
