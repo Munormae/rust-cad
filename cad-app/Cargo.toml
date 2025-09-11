@@ -1,0 +1,12 @@
+[package]
+name = "cad-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cad-core   = { path = "../cad-core" }
+cad-render = { path = "../cad-render" }
+
+# eframe тянет egui и всё нужное под капотом (winit/wgpu)
+eframe = { version = "0.29", features = ["wgpu"] }
+egui   = "0.29"

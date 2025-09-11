@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "cad-core",
+    "cad-render",
+    "cad-app",
+]
+default-members = ["cad-app"]
+resolver = "2"

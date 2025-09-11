@@ -1,0 +1,10 @@
+[package]
+name = "cad-render"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cad-core = { path = "../cad-core" }
+egui = "0.29"
+anyhow = "1"
+rfd = "0.14"
