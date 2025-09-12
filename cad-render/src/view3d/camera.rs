@@ -28,12 +28,12 @@ impl Camera {
     pub fn default_ortho() -> Self {
         Self {
             center: Pt3::new(0.0, 0.0, 0.0),
-            pivot:  Pt3::new(0.0, 0.0, 0.0),
+            pivot: Pt3::new(0.0, 0.0, 0.0),
             yaw: 0.8,
             pitch: 0.4,
             // для орто удобно разрешить сквозные значения по z:
             near: -1_000_000.0,
-            far:   1_000_000.0,
+            far: 1_000_000.0,
             proj: Projection::Ortho { half_h: 5000.0 },
         }
     }
@@ -50,10 +50,10 @@ impl Camera {
 
         // УСТОЙЧИВЫЙ базис:
         // right — зависит только от yaw (не вырождается и не "флипает" при |pitch|≈90°)
-        let r = (-sy,  cy, 0.0);
+        let r = (-sy, cy, 0.0);
 
         // forward — как обычно из yaw/pitch
-        let f = ( cy * cp,  sy * cp,  sp);
+        let f = (cy * cp, sy * cp, sp);
 
         // up — праворукий: f × r (именно в таком порядке!)
         let u = (
@@ -83,14 +83,16 @@ impl Camera {
         }
 
         let aspect = (rect.width() / rect.height()).max(1e-4);
-        let half_h = match self.proj { Projection::Ortho { half_h } => half_h };
+        let half_h = match self.proj {
+            Projection::Ortho { half_h } => half_h,
+        };
 
         // орто-проекция в NDC
         let ndc_x = x / (half_h * aspect);
         let ndc_y = y / half_h;
 
         // NDC → пиксели
-        let sx = rect.center().x + 0.5 * rect.width()  * ndc_x;
+        let sx = rect.center().x + 0.5 * rect.width() * ndc_x;
         let sy = rect.center().y - 0.5 * rect.height() * ndc_y;
         Some(Pos2::new(sx, sy))
     }
@@ -99,10 +101,12 @@ impl Camera {
     pub fn screen_delta_to_world_pan(&self, rect: Rect, dpx: f32, dpy: f32) -> (f32, f32, f32) {
         let (r, u, _f) = self.axes();
         let aspect = (rect.width() / rect.height()).max(1e-4);
-        let half_h = match self.proj { Projection::Ortho { half_h } => half_h };
+        let half_h = match self.proj {
+            Projection::Ortho { half_h } => half_h,
+        };
 
         // перевод пикселей экрана в мировые по осям экрана (x — вправо, y — вверх)
-        let dx_world =  (dpx / rect.width())  * (2.0 * half_h * aspect);
+        let dx_world = (dpx / rect.width()) * (2.0 * half_h * aspect);
         let dy_world = -(dpy / rect.height()) * (2.0 * half_h);
 
         // и затем в мировые координаты
@@ -141,8 +145,8 @@ impl Camera {
         let nz = v.x * f0.0 + v.y * f0.1 + v.z * f0.2;
 
         // Обновляем углы (yaw свободно; pitch оборачиваем по ±π)
-        self.yaw   += dyaw;
-        self.pitch  = wrap_pi(self.pitch + dpitch);
+        self.yaw += dyaw;
+        self.pitch = wrap_pi(self.pitch + dpitch);
 
         // Оси ПОСЛЕ изменения углов
         let (r1, u1, f1) = self.axes();
@@ -203,22 +207,42 @@ impl Camera {
     }
     pub fn reorient_around_pivot(&mut self, new_yaw: f32, new_pitch: f32) {
         // разложим текущий вектор center-pivot по старым осям и соберём в новых
-        let v = Pt3::new(self.center.x - self.pivot.x, self.center.y - self.pivot.y, self.center.z - self.pivot.z);
-        let (r0,u0,f0) = self.axes();
-        let nx = v.x*r0.0 + v.y*r0.1 + v.z*r0.2;
-        let ny = v.x*u0.0 + v.y*u0.1 + v.z*u0.2;
-        let nz = v.x*f0.0 + v.y*f0.1 + v.z*f0.2;
+        let v = Pt3::new(
+            self.center.x - self.pivot.x,
+            self.center.y - self.pivot.y,
+            self.center.z - self.pivot.z,
+        );
+        let (r0, u0, f0) = self.axes();
+        let nx = v.x * r0.0 + v.y * r0.1 + v.z * r0.2;
+        let ny = v.x * u0.0 + v.y * u0.1 + v.z * u0.2;
+        let nz = v.x * f0.0 + v.y * f0.1 + v.z * f0.2;
 
         self.yaw = new_yaw;
         // тот же wrap_pi, что и в rotate_around_pivot
-        fn wrap_pi(a:f32)->f32{ use std::f32::consts::PI; let mut x=a%(2.0*PI); if x>PI{x-=2.0*PI;} if x<=-PI{x+=2.0*PI;} x }
+        fn wrap_pi(a: f32) -> f32 {
+            use std::f32::consts::PI;
+            let mut x = a % (2.0 * PI);
+            if x > PI {
+                x -= 2.0 * PI;
+            }
+            if x <= -PI {
+                x += 2.0 * PI;
+            }
+            x
+        }
         self.pitch = wrap_pi(new_pitch);
 
-        let (r1,u1,f1) = self.axes();
-        let v2 = Pt3::new(r1.0*nx + u1.0*ny + f1.0*nz,
-                          r1.1*nx + u1.1*ny + f1.1*nz,
-                          r1.2*nx + u1.2*ny + f1.2*nz);
-        self.center = Pt3::new(self.pivot.x + v2.x, self.pivot.y + v2.y, self.pivot.z + v2.z);
+        let (r1, u1, f1) = self.axes();
+        let v2 = Pt3::new(
+            r1.0 * nx + u1.0 * ny + f1.0 * nz,
+            r1.1 * nx + u1.1 * ny + f1.1 * nz,
+            r1.2 * nx + u1.2 * ny + f1.2 * nz,
+        );
+        self.center = Pt3::new(
+            self.pivot.x + v2.x,
+            self.pivot.y + v2.y,
+            self.pivot.z + v2.z,
+        );
     }
 }
 
@@ -245,7 +269,11 @@ fn normalize(v: (f32, f32, f32)) -> (f32, f32, f32) {
 fn wrap_pi(a: f32) -> f32 {
     use std::f32::consts::PI;
     let mut x = a % (2.0 * PI);
-    if x > PI { x -= 2.0 * PI; }
-    if x <= -PI { x += 2.0 * PI; }
+    if x > PI {
+        x -= 2.0 * PI;
+    }
+    if x <= -PI {
+        x += 2.0 * PI;
+    }
     x
 }

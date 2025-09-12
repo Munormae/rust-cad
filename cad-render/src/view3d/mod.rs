@@ -1,9 +1,14 @@
-mod camera;      pub use camera::Camera;
-mod controller;  pub use controller::Controller;
-mod renderer;    pub use renderer::draw_scene;
+mod camera;
+pub use camera::Camera;
+mod controller;
+pub use controller::Controller;
+mod renderer;
+pub use renderer::draw_scene;
 mod gizmos;
-mod snap;        pub use snap::{Snapper, SnapKind};
-mod viewcube;    use viewcube::ViewCube;
+mod snap;
+pub use snap::{SnapKind, Snapper};
+mod viewcube;
+use viewcube::ViewCube;
 
 use cad_core::model3d::{Project3D, Pt3};
 use egui::{Rect, Sense, Ui};

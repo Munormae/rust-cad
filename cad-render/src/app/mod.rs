@@ -1,7 +1,9 @@
 // cad-render/src/app/mod.rs
 use anyhow::Result;
+use cad_core::ifc::import_ifc;
 use cad_core::*;
 use egui::{Context, Key, PointerButton, Sense, Ui};
+
 mod camera;
 mod draw;
 mod history;
@@ -9,6 +11,7 @@ mod input;
 mod osnap;
 mod picking;
 mod selection;
+
 use crate::view3d::View3D;
 pub use history::History;
 pub use input::is_pan_drag;
@@ -143,7 +146,7 @@ impl AppState {
                     .add_filter("IFC", &["ifc"])
                     .pick_file()
                 {
-                    match cad_core::ifc_io::import_ifc(path.to_string_lossy().as_ref()) {
+                    match import_ifc(path.to_string_lossy().as_ref()) {
                         Ok(project) => {
                             self.project3d = project;
                             self.show_3d = true;
