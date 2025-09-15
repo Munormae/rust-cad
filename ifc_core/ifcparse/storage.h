@@ -1,17 +1,24 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
-#ifndef IFOPSH_WITH_ROCKSDB
-
+#if defined(HAVE_ROCKSDB) && HAVE_ROCKSDB
+  #include <rocksdb/db.h>
+  #include <rocksdb/options.h>
+  #include <rocksdb/status.h>
+  #include <rocksdb/iterator.h>
+#else
 namespace rocksdb {
     class DB {};
     class Options {};
     class WriteOptions {};
     class ReadOptions {};
     class Iterator {};
-    class Status {};
+    class Status {
+    public:
+        static Status OK() { return Status(); }
+        bool ok() const { return true; }
+    };
 }
-
 #endif
 
 #include "rocksdb_map_adapter.h"
@@ -35,71 +42,56 @@ namespace rocksdb {
 template <typename... Iterators>
 class variant_iterator {
 public:
-    // The variant type holding one of the underlying iterators.
     using variant_type = std::variant<Iterators...>;
-
-    // Assuming that all iterator types have the same value_type, difference_type, etc.
     using value_type = std::common_type_t<typename std::iterator_traits<Iterators>::value_type...>;
     using difference_type = std::common_type_t<typename std::iterator_traits<Iterators>::difference_type...>;
     using pointer = value_type*;
     using reference = value_type&;
-    // For simplicity, we use input_iterator_tag; if all underlying iterators support more,
-    // you could compute the common iterator_category.
     using iterator_category = std::input_iterator_tag;
 
-    // Default constructor.
     variant_iterator() = default;
 
-    // Construct from any one of the underlying iterator types.
     template <typename Iterator>
     variant_iterator(Iterator it) : it_(it) {}
 
-    // Dereference operator.
     decltype(auto) operator*() const {
         return std::visit([](const auto& iter) -> decltype(auto) {
             return *iter;
         }, it_);
     }
 
-    // Arrow operator.
     decltype(auto) operator->() const {
         return std::visit([](const auto& iter) -> decltype(auto) {
             return iter.operator->();
         }, it_);
     }
 
-    // Pre-increment operator.
     variant_iterator& operator++() {
         std::visit([](auto& iter) { ++iter; }, it_);
         return *this;
     }
 
-    // Post-increment operator.
     variant_iterator operator++(int) {
         variant_iterator temp(*this);
         ++(*this);
         return temp;
     }
 
-    // Pre-decrement operator.
     variant_iterator& operator--() {
         std::visit([](auto& iter) { --iter; }, it_);
         return *this;
     }
 
-    // Post-decrement operator.
     variant_iterator operator--(int) {
         variant_iterator temp(*this);
         --(*this);
         return temp;
     }
 
-    // Equality comparison.
     friend bool operator==(const variant_iterator& lhs, const variant_iterator& rhs) {
         return lhs.it_ == rhs.it_;
     }
 
-    // Inequality comparison.
     friend bool operator!=(const variant_iterator& lhs, const variant_iterator& rhs) {
         return !(lhs == rhs);
     }
@@ -141,13 +133,13 @@ namespace IfcParse {
     };
 
     struct Token {
-        IfcSpfLexer* lexer; //TODO: remove it from here
+        IfcSpfLexer* lexer;
         unsigned startPos;
         TokenType type;
         union {
-            char value_char;     //types: OPERATOR
-            int value_int;       //types: INT, IDENTIFIER
-            double value_double; //types: FLOAT
+            char value_char;
+            int value_int;
+            double value_double;
         };
 
         Token() : lexer(0),
@@ -190,9 +182,6 @@ namespace IfcParse {
     namespace impl {
         struct in_memory_file_storage {
             IfcParse::IfcSpfLexer* tokens;
-            // IfcParse::IfcSpfStream* stream;
-
-            // Either one of these needs to be set
             IfcParse::IfcFile* file;
             const IfcParse::schema_definition* schema;
 
@@ -265,7 +254,6 @@ namespace IfcParse {
             void register_inverse(unsigned, const IfcParse::entity* from_entity, int inst_id, int attribute_index);
             void unregister_inverse(unsigned, const IfcParse::entity* from_entity, IfcUtil::IfcBaseClass*, int attribute_index);
 
-            // @todo is this still used
             IfcEntityInstanceData read(unsigned int index);
             void read_from_stream(IfcParse::IfcSpfStream* stream, const IfcParse::schema_definition*& schema, unsigned int& max_id);
 
@@ -315,35 +303,20 @@ namespace IfcParse {
                 entityinstance_ref
             };
 
-            // to make sure that instance pointer are constant during file lifetime
-            // cache instances because we want stable pointers
-            // @todo this is silly, but we cannot have the same type, this should be just a pointer then on the IfcFile side?
             typedef std::map<uint32_t, IfcUtil::IfcBaseClass*> entity_by_iden_cache_t;
             entity_by_iden_cache_t instance_cache_, type_instance_cache_;
 
-            // @todo all these size_ts should probably be uint32_t for consistency with in-mem storage
-
-            // lookup id->identity
-            // typedef rocksdb_map_adapter<size_t, size_t> identity_by_id_t;
-            // identity_by_id_t byid_;
             typedef rocksdb_set_view<size_t> instance_name_view_t;
             instance_name_view_t instance_ids_;
             typedef set_to_map_transformer<instance_name_view_t, std::function<IfcUtil::IfcBaseClass* (size_t)>> entity_instance_by_name_t;
             entity_instance_by_name_t instance_by_name_;
 
-            // typedef map_transformer<rocksdb_map_adapter<size_t, size_t>, std::function<IfcUtil::IfcBaseClass*(size_t)>, std::function<size_t(IfcUtil::IfcBaseClass*)>> entity_by_id_t;
-            // storage is now Instance name -> Identity -> Pointer (cached)
-            // entity_by_id_t byidentity_;
-
-            // index in schema to binary serialized ids
             typedef rocksdb_map_adapter<size_t, std::string> instance_id_str_by_type_t;
             instance_id_str_by_type_t bytype_;
 
-            // guid -> id
             typedef rocksdb_map_adapter<std::string, size_t> instance_id_by_guid_str_t;
             instance_id_by_guid_str_t byguid_internal_;
 
-            // guid -> id -> instance
             typedef map_transformer<rocksdb_map_adapter<std::string, size_t>, std::function<IfcUtil::IfcBaseClass* (size_t)>, std::function< size_t(IfcUtil::IfcBaseClass*)>> entity_instance_by_guid_t;
             entity_instance_by_guid_t byguid_;
 
@@ -356,7 +329,6 @@ namespace IfcParse {
             typedef rocksdb_map_adapter<inverse_attr_record, std::vector<uint32_t>> entities_by_ref_t;
             entities_by_ref_t byref_excl_;
 
-            // @todo naming
             rocks_db_file_storage(const std::string& filepath, IfcParse::IfcFile* file, bool readonly=false);
             ~rocks_db_file_storage();
 
@@ -364,83 +336,6 @@ namespace IfcParse {
 
             IfcUtil::IfcBaseClass* assert_existance(size_t instanceId, instance_ref r);
 
-            // @todo this could be another map_adapter?
-            /*
-            class rocksdb_instance_iterator {
-            private:
-                rocksdb::Iterator* state_;
-                rocks_db_file_storage* storage_;
-
-                static constexpr char prefix_[] = "i|";
-
-                boost::optional<size_t> read_id_() const {
-                    auto sv = state_->key().ToStringView();
-                    auto ii = sv.find("|", 2);
-                    if (ii != decltype(sv)::npos) {
-                        char* pEnd;
-                        long result = strtol(sv.data() + 2, &pEnd, 10);
-                        if (*pEnd == '|') {
-                            return (size_t)result;
-                        }
-                    }
-                    return boost::none;
-                }
-            public:
-                rocksdb_instance_iterator()
-                    : state_(nullptr)
-                    , storage_(nullptr)
-                {}
-                rocksdb_instance_iterator(rocks_db_file_storage* fs)
-                    : storage_(fs)
-                {
-                    state_ = fs->db->NewIterator(rocksdb::ReadOptions());
-                    state_->Seek(prefix_);
-                    if (!state_->Valid() || !state_->key().starts_with(prefix_)) {
-                        delete state_;
-                        state_ = nullptr;
-                    }
-                }
-                rocksdb_instance_iterator& operator++() {
-                    if (!state_) {
-                        return *this;
-                    }
-                    auto last_id = read_id_();
-                    while (state_->Valid()) {
-                        state_->Next();
-                        // Stop if we've left the prefix range.
-                        if (!state_->Valid() || !state_->key().starts_with(prefix_)) {
-                            delete state_;
-                            state_ = nullptr;
-                            break;
-                        }
-                        if (read_id_() != last_id) {
-                            break;
-                        }
-                    }
-                    return *this;
-                }
-                rocksdb_instance_iterator operator++(int) {
-                    rocksdb_instance_iterator temp = *this;
-                    ++(*this);
-                    return temp;
-                }
-                bool operator==(const rocksdb_instance_iterator& other) const {
-                    if (state_ == nullptr && other.state_ == nullptr) {
-                        return true;
-                    } else {
-                        return read_id_() == other.read_id_();
-                    }
-                }
-
-                bool operator!=(const rocksdb_instance_iterator& other) const {
-                    return !(*this == other);
-                }
-
-                IfcUtil::IfcBaseClass* operator*() const;
-            };
-            */
-
-            // @todo merge iterators (template?)
             class rocksdb_types_iterator {
             private:
                 rocksdb::Iterator* state_;
@@ -449,7 +344,7 @@ namespace IfcParse {
                 static constexpr char prefix_[] = "t|";
 
                 boost::optional<size_t> read_id_() const {
-#ifdef IFOPSH_WITH_ROCKSDB
+#if defined(HAVE_ROCKSDB) && HAVE_ROCKSDB
                     auto sv = state_->key().ToStringView();
                     auto ii = sv.find("|", 2);
                     if (ii != decltype(sv)::npos) {
@@ -465,7 +360,6 @@ namespace IfcParse {
             public:
                 using iterator_category = std::forward_iterator_tag;
                 using value_type = const IfcParse::declaration*;
-                // @todo ?
                 using difference_type = ptrdiff_t;
                 using pointer = value_type const*;
                 using reference = value_type const&;
@@ -479,7 +373,7 @@ namespace IfcParse {
                 rocksdb_types_iterator(const rocks_db_file_storage* fs)
                     : storage_(fs)
                 {
-#ifdef IFOPSH_WITH_ROCKSDB
+#if defined(HAVE_ROCKSDB) && HAVE_ROCKSDB
                     state_ = fs->db->NewIterator(rocksdb::ReadOptions());
                     state_->Seek(prefix_);
                     if (!state_->Valid() || !state_->key().starts_with(prefix_)) {
@@ -490,14 +384,13 @@ namespace IfcParse {
                 }
 
                 rocksdb_types_iterator& operator++() {
-#ifdef IFOPSH_WITH_ROCKSDB
+#if defined(HAVE_ROCKSDB) && HAVE_ROCKSDB
                     if (!state_) {
                         return *this;
                     }
                     auto last_id = read_id_();
                     while (state_->Valid()) {
                         state_->Next();
-                        // Stop if we've left the prefix range.
                         if (!state_->Valid() || !state_->key().starts_with(prefix_)) {
                             delete state_;
                             state_ = nullptr;
@@ -512,7 +405,7 @@ namespace IfcParse {
                 }
 
                 rocksdb_types_iterator operator++(int) {
-                    rocksdb_types_iterator temp = *this;
+                    rocksdb_types_iterator temp(*this);
                     ++(*this);
                     return temp;
                 }
@@ -536,13 +429,11 @@ namespace IfcParse {
                 }
             };
 
-            // @todo rocksdb_instance_iterator?
             using const_iterator = entity_instance_by_name_t::iterator;
 
             void register_inverse(unsigned, const IfcParse::entity* from_entity, int inst_id, int attribute_index);
             void unregister_inverse(unsigned, const IfcParse::entity* from_entity, IfcUtil::IfcBaseClass*, int attribute_index);
 
-            // @todo a bit hard as a map because of value_type being an aggregate
             void add_type_ref(IfcUtil::IfcBaseClass* new_entity);
             void remove_type_ref(IfcUtil::IfcBaseClass* new_entity);
 
