@@ -1,0 +1,17 @@
+[package]
+name = "ifc_core"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+links = "ifc_schemas"
+
+[lib]
+name = "ifc_core"
+crate-type = ["rlib"]
+
+[dependencies]
+
+
+[build-dependencies]
+cc = "1.2.37"
+dunce = "1"
