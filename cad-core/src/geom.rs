@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use truck_geometry::prelude::*; // Point2, BSplineCurve, NurbsCurve, KnotVec, ParametricCurve
+use truck_geometry::prelude::*; // Point2, Vector2, Vector3, BSplineCurve, NurbsCurve, KnotVec, ParametricCurve, BoundedCurve
 
 // --------------------------- базовые типы (serde/UI) ---------------------------
 
@@ -12,12 +12,11 @@ impl Pt2 {
     pub fn new(x: f32, y: f32) -> Self { Self { x, y } }
 }
 
-// Линейка сущностей 2D
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum EntityKind {
     LineSeg { a: Pt2, b: Pt2 },
 
-    /// Углы в **радианах**
+    /// Углы в радианах
     Arc {
         center: Pt2,
         radius: f32,
@@ -30,8 +29,8 @@ pub enum EntityKind {
         closed: bool,
     },
 
-    /// Рациональная/нерциональная кривая: если `weights == None`, это обычный B-сплайн.
-    /// degree = порядок - 1 (как обычно), knots — открытый/униформ и т.п. на твоей совести :)
+    /// Если `weights == None` — обычный B-сплайн.
+    /// degree = порядок - 1; knots — как подашь (открытый/равномерный и т.п.)
     NurbsCurve2D {
         degree: usize,
         knots: Vec<f64>,
@@ -39,7 +38,6 @@ pub enum EntityKind {
         weights: Option<Vec<f64>>,
     },
 
-    /// Текстовая аннотация (для полноты совместимости)
     Text {
         pos: Pt2,
         content: String,
@@ -71,43 +69,37 @@ impl Default for Style {
 
 // --------------------------- конвертеры в truck ---------------------------
 
-impl From<Pt2> for Point2<f64> {
+impl From<Pt2> for Point2 {
     fn from(p: Pt2) -> Self { Point2::new(p.x as f64, p.y as f64) }
 }
-impl From<Point2<f64>> for Pt2 {
-    fn from(p: Point2<f64>) -> Self { Pt2::new(p.x as f32, p.y as f32) }
+impl From<Point2> for Pt2 {
+    fn from(p: Point2) -> Self { Pt2::new(p.x as f32, p.y as f32) }
 }
 
 /// Представление кривой truck'ом
 pub enum TruckCurve2 {
-    BSpline(BSplineCurve<Point2<f64>>),
-    Nurbs(NurbsCurve<Point2<f64>>),
+    BSpline(BSplineCurve<Point2>),
+    // ВАЖНО: NURBS в 2D — это NurbsCurve<Vector3> (гомогенные координаты)
+    Nurbs(NurbsCurve<Vector3>),
 }
 
 impl EntityKind {
-    /// Сконструировать truck-кривую (NURBS/BSpline) из нашей сущности.
-    /// Для Polyline/Line вернёт degree=1 B-splines,
-    /// для Arc — точный квадратичный рациональный NURBS (с разбиением по ≤ 90°).
+    /// Построить truck-кривую из нашей сущности.
     pub fn to_truck(&self) -> Option<TruckCurve2> {
         match self {
             EntityKind::LineSeg { a, b } => {
                 let ctrl = vec![(*a).into(), (*b).into()];
-                let n = ctrl.len();
-                // degree=1, open uniform: [0,0,1,1]
-                let knots = KnotVec::from(vec![0.0, 0.0, 1.0, 1.0]);
+                let knots = KnotVec::from(vec![0.0, 0.0, 1.0, 1.0]); // degree=1
                 Some(TruckCurve2::BSpline(BSplineCurve::new(knots, ctrl)))
             }
 
             EntityKind::Polyline { pts, closed } => {
-                if pts.len() < 2 {
-                    return None;
-                }
-                let mut ctrl: Vec<Point2<f64>> = pts.iter().copied().map(Into::into).collect();
-                if *closed {
-                    ctrl.push(ctrl[0]);
-                }
+                if pts.len() < 2 { return None; }
+                let mut ctrl: Vec<Point2> = pts.iter().copied().map(Into::into).collect();
+                if *closed { ctrl.push(ctrl[0]); } // замыкаем
+
+                // degree=1, открытый равномерный: [0,0, t..., 1,1]
                 let n = ctrl.len();
-                // degree=1, open uniform с равномерными внутренними узлами
                 let mut kv = vec![0.0, 0.0];
                 if n > 2 {
                     for i in 1..(n - 1) {
@@ -115,6 +107,7 @@ impl EntityKind {
                     }
                 }
                 kv.extend_from_slice(&[1.0, 1.0]);
+
                 Some(TruckCurve2::BSpline(BSplineCurve::new(KnotVec::from(kv), ctrl)))
             }
 
@@ -123,15 +116,17 @@ impl EntityKind {
                 let r = *radius as f64;
                 let a0 = *start_angle as f64;
                 let a1 = *end_angle as f64;
-                let nurbs = nurbs_arc_deg2(c, r, a0, a1);
+                let nurbs = nurbs_arc_deg2(c, r, a0, a1)?;
                 Some(TruckCurve2::Nurbs(nurbs))
             }
 
-            EntityKind::NurbsCurve2D { degree, knots, ctrl_pts, weights } => {
-                let ctrl: Vec<Point2<f64>> = ctrl_pts.iter().copied().map(Into::into).collect();
+            EntityKind::NurbsCurve2D { degree: _deg, knots, ctrl_pts, weights } => {
+                let ctrl: Vec<Point2> = ctrl_pts.iter().copied().map(Into::into).collect();
                 let kv = KnotVec::from(knots.clone());
                 if let Some(w) = weights {
-                    let nurbs = NurbsCurve::new(BSplineCurve::new(kv, ctrl), w.clone());
+                    // Правильный конструктор: через try_from_bspline_and_weights
+                    let bsp = BSplineCurve::new(kv, ctrl);
+                    let nurbs = NurbsCurve::<Vector3>::try_from_bspline_and_weights(bsp, w.clone()).ok()?;
                     Some(TruckCurve2::Nurbs(nurbs))
                 } else {
                     Some(TruckCurve2::BSpline(BSplineCurve::new(kv, ctrl)))
@@ -142,44 +137,39 @@ impl EntityKind {
         }
     }
 
-    /// Сэмплинг кривой для быстрой отрисовки (N экранных шагов).
+    /// Быстрый сэмплинг кривой (N шагов) для отрисовки.
     pub fn sample(&self, steps: usize) -> Vec<Pt2> {
         match self.to_truck() {
-            Some(TruckCurve2::BSpline(c)) => sample_curve_bspline(&c, steps),
-            Some(TruckCurve2::Nurbs(c)) => sample_curve_nurbs(&c, steps),
+            Some(TruckCurve2::BSpline(c)) => sample_curve(&c, steps),
+            Some(TruckCurve2::Nurbs(c)) => sample_curve(&c, steps),
             None => match self {
-                // текст не рисуем как кривую
                 EntityKind::Text { .. } => vec![],
-                // если не удалось собрать BSpline, хотя бы вернём исходные точки полилинии
                 EntityKind::Polyline { pts, .. } => pts.clone(),
-                // на всякий: прямая как 2 точки
                 EntityKind::LineSeg { a, b } => vec![*a, *b],
-                // fallback для дуги: дискретизация угла
                 EntityKind::Arc { center, radius, start_angle, end_angle } => {
                     let c = (center.x as f64, center.y as f64);
                     let r = *radius as f64;
                     let s = *start_angle as f64;
                     let e = *end_angle as f64;
-                    sample_arc(c, r, s, e, steps)
+                    sample_arc_fallback(c, r, s, e, steps)
                 }
-                EntityKind::NurbsCurve2D { .. } => vec![], // не должно случаться
+                EntityKind::NurbsCurve2D { .. } => vec![],
             },
         }
     }
 }
 
-// --------------------------- утилиты: дуга как Nurbs2 ---------------------------
+// --------------------------- дуга как NURBS degree=2 ---------------------------
 
 /// Точный квадратичный рациональный NURBS для дуги [a0..a1] центра c и радиуса r.
-/// Разбивает дугу на сегменты ≤ 90° для устойчивых весов.
-/// Формулы: P0, P2 — конец/начало; P1 = (P0+P2)/(2w), где w = cos(Δ/2).
-fn nurbs_arc_deg2(c: (f64, f64), r: f64, a0: f64, a1: f64) -> NurbsCurve<Point2<f64>> {
+/// Разбиваем на куски ≤ 90°. Возвращаем None, если сборка не удалась.
+fn nurbs_arc_deg2(c: (f64, f64), r: f64, a0: f64, a1: f64) -> Option<NurbsCurve<Vector3>> {
     let mut angs = split_angles(a0, a1);
-    if angs.len() < 2 {
-        angs = vec![a0, a1];
-    }
-    let mut ctrl: Vec<Point2<f64>> = Vec::with_capacity(2 * angs.len() + 1);
-    let mut wts: Vec<f64> = Vec::with_capacity(2 * angs.len() + 1);
+    if angs.len() < 2 { angs = vec![a0, a1]; }
+    let segs = angs.len() - 1;
+
+    let mut ctrl: Vec<Point2> = Vec::with_capacity(2 * segs + 1);
+    let mut wts: Vec<f64> = Vec::with_capacity(2 * segs + 1);
 
     // первый сегмент
     let (p0, p1, p2, w) = arc_segment_ctrl(c, r, angs[0], angs[1]);
@@ -190,8 +180,8 @@ fn nurbs_arc_deg2(c: (f64, f64), r: f64, a0: f64, a1: f64) -> NurbsCurve<Point2<
     wts.push(w);
     wts.push(1.0);
 
-    // остальные сегменты «пришиваются»
-    for k in 1..(angs.len() - 1) {
+    // остальные сегменты «пришиваем»
+    for k in 1..segs {
         let (.., q1, q2, wq) = arc_segment_ctrl(c, r, angs[k], angs[k + 1]);
         ctrl.push(q1);
         ctrl.push(q2);
@@ -199,19 +189,18 @@ fn nurbs_arc_deg2(c: (f64, f64), r: f64, a0: f64, a1: f64) -> NurbsCurve<Point2<
         wts.push(1.0);
     }
 
-    // knot-vector для degree=2: [0,0,0, s1, s2, ..., 1,1,1] с равномерными внутренними узлами по сегментам
-    let segs = angs.len() - 1;
+    // degree=2, knots: [0,0,0, s1, ..., 1,1,1]
     let mut kv = vec![0.0, 0.0, 0.0];
-    for i in 1..segs {
-        kv.push(i as f64 / segs as f64);
-    }
+    for i in 1..segs { kv.push(i as f64 / segs as f64); }
     kv.extend_from_slice(&[1.0, 1.0, 1.0]);
 
-    NurbsCurve::new(BSplineCurve::new(KnotVec::from(kv), ctrl), wts)
+    let bsp = BSplineCurve::new(KnotVec::from(kv), ctrl);
+    NurbsCurve::<Vector3>::try_from_bspline_and_weights(bsp, wts).ok()
 }
 
-// один дуговой сегмент (≤ 90°): отдаёт P0,P1,P2 и вес средней точки
-fn arc_segment_ctrl(c: (f64, f64), r: f64, a0: f64, a1: f64) -> (Point2<f64>, Point2<f64>, Point2<f64>, f64) {
+/// Один дуговой сегмент (≤ 90°): (P0, P1, P2, w), w = cos(Δ/2).
+/// ВАЖНО: P1 = C + ((P0-C)+(P2-C)) / (2w), иначе дуга «сползёт» при смещённом центре.
+fn arc_segment_ctrl(c: (f64, f64), r: f64, a0: f64, a1: f64) -> (Point2, Point2, Point2, f64) {
     let (cx, cy) = c;
     let (s0, c0) = a0.sin_cos();
     let (s1, c1) = a1.sin_cos();
@@ -219,17 +208,19 @@ fn arc_segment_ctrl(c: (f64, f64), r: f64, a0: f64, a1: f64) -> (Point2<f64>, Po
     let p2 = Point2::new(cx + r * c1, cy + r * s1);
 
     let dm = 0.5 * (a1 - a0);
-    let w = dm.cos(); // вес средней точки
-    // средняя точка через формулу (P0 + P2) / (2w)
-    let p1 = Point2::new((p0.x + p2.x) / (2.0 * w), (p0.y + p2.y) / (2.0 * w));
+    let w = dm.cos(); // вес средней
+    let p1 = Point2::new(
+        cx + ((p0.x - cx) + (p2.x - cx)) / (2.0 * w),
+        cy + ((p0.y - cy) + (p2.y - cy)) / (2.0 * w),
+    );
     (p0, p1, p2, w)
 }
 
-// разбиение на ≤ 90° сегменты
+/// Разбить [a0..a1] на куски по ≤ 90° (сохраняем направление)
 fn split_angles(a0: f64, a1: f64) -> Vec<f64> {
     let mut start = a0;
     let mut v = vec![start];
-    let step = std::f64::consts::FRAC_PI_2; // 90°
+    let step = std::f64::consts::FRAC_PI_2;
     let dir = if a1 >= a0 { 1.0 } else { -1.0 };
     while (a1 - start) * dir > step {
         start += dir * step;
@@ -239,29 +230,24 @@ fn split_angles(a0: f64, a1: f64) -> Vec<f64> {
     v
 }
 
-// --------------------------- утилиты: сэмплинг ---------------------------
+// --------------------------- сэмплинг ---------------------------
 
-fn sample_curve_bspline(c: &BSplineCurve<Point2<f64>>, steps: usize) -> Vec<Pt2> {
+fn sample_curve<C>(c: &C, steps: usize) -> Vec<Pt2>
+where
+    C: ParametricCurve<Point = Point2, Vector = Vector2> + BoundedCurve,
+{
     let steps = steps.max(2);
+    let (t0, t1) = c.range_tuple();
     (0..=steps)
         .map(|i| {
-            let t = i as f64 / steps as f64;
+            let t = t0 + (t1 - t0) * (i as f64 / steps as f64);
             Pt2::from(c.subs(t))
         })
         .collect()
 }
 
-fn sample_curve_nurbs(c: &NurbsCurve<Point2<f64>>, steps: usize) -> Vec<Pt2> {
-    let steps = steps.max(2);
-    (0..=steps)
-        .map(|i| {
-            let t = i as f64 / steps as f64;
-            Pt2::from(c.subs(t))
-        })
-        .collect()
-}
-
-fn sample_arc(c: (f64, f64), r: f64, a0: f64, a1: f64, steps: usize) -> Vec<Pt2> {
+// запасной дискретизатор дуги, если не строим NURBS
+fn sample_arc_fallback(c: (f64, f64), r: f64, a0: f64, a1: f64, steps: usize) -> Vec<Pt2> {
     let steps = steps.max(2);
     (0..=steps)
         .map(|i| {
@@ -275,8 +261,8 @@ fn sample_arc(c: (f64, f64), r: f64, a0: f64, a1: f64, steps: usize) -> Vec<Pt2>
 
 // --------------------------- демо ---------------------------
 
-/// Демонстрационный B-сплайн Безье (degree=3), чисто для проверки пайплайна
-pub fn demo_nurbs() -> BSplineCurve<Point2<f64>> {
+/// Простой Безье (degree=3) — проверка пайплайна
+pub fn demo_nurbs() -> BSplineCurve<Point2> {
     let ctrl = vec![
         Point2::new(0.0, 0.0),
         Point2::new(50.0, 100.0),
