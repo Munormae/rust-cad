@@ -6,7 +6,6 @@ pub use truck_geometry::prelude::{algo, inv_or_zero};
 pub use truck_geometry::{decorators::*, nurbs::*, specifieds::*};
 pub use truck_polymesh::PolylineCurve;
 
-/// 3-dimensional curve
 #[derive(
     Clone,
     Debug,
@@ -23,13 +22,9 @@ pub use truck_polymesh::PolylineCurve;
     SearchParameterD1,
 )]
 pub enum Curve {
-    /// line
     Line(Line<Point3>),
-    /// 3-dimensional B-spline curve
     BSplineCurve(BSplineCurve<Point3>),
-    /// 3-dimensional NURBS curve
     NurbsCurve(NurbsCurve<Vector4>),
-    /// intersection curve
     IntersectionCurve(IntersectionCurve<Box<Curve>, Box<Surface>, Box<Surface>>),
 }
 
@@ -77,21 +72,26 @@ impl From<IntersectionCurve<BSplineCurve<Point3>, Surface, Surface>> for Curve {
 
 impl ToSameGeometry<Curve> for Line<Point3> {
     #[inline]
-    fn to_same_geometry(&self) -> Curve { Curve::from(*self) }
+    fn to_same_geometry(&self) -> Curve {
+        Curve::from(*self)
+    }
 }
 
 impl ToSameGeometry<Curve> for Processor<TrimmedCurve<UnitCircle<Point3>>, Matrix4> {
     #[inline]
-    fn to_same_geometry(&self) -> Curve { Curve::NurbsCurve(self.to_same_geometry()) }
+    fn to_same_geometry(&self) -> Curve {
+        Curve::NurbsCurve(self.to_same_geometry())
+    }
 }
 
 impl ToSameGeometry<Curve> for BSplineCurve<Point3> {
     #[inline]
-    fn to_same_geometry(&self) -> Curve { Curve::from(self.clone()) }
+    fn to_same_geometry(&self) -> Curve {
+        Curve::from(self.clone())
+    }
 }
 
 impl Curve {
-    /// Into non-ratinalized 4-dimensional B-spline curve
     pub fn lift_up(&self) -> BSplineCurve<Vector4> {
         match self {
             Curve::Line(curve) => Curve::BSplineCurve((*curve).into()).lift_up(),
@@ -111,7 +111,6 @@ impl Curve {
     }
 }
 
-/// 3-dimensional surfaces
 #[derive(
     Clone,
     Debug,
@@ -125,13 +124,9 @@ impl Curve {
     SearchParameterD2,
 )]
 pub enum Surface {
-    /// Plane
     Plane(Plane),
-    /// 3-dimensional B-spline surface
     BSplineSurface(BSplineSurface<Point3>),
-    /// 3-dimensional NURBS Surface
     NurbsSurface(NurbsSurface<Vector4>),
-    /// revoluted curve
     RevolutedCurve(Processor<RevolutedCurve<Curve>, Matrix4>),
 }
 
@@ -241,11 +236,15 @@ impl IncludeCurve<Curve> for Plane {
 }
 
 impl ToSameGeometry<Surface> for Plane {
-    fn to_same_geometry(&self) -> Surface { (*self).into() }
+    fn to_same_geometry(&self) -> Surface {
+        (*self).into()
+    }
 }
 
 impl ToSameGeometry<Surface> for RevolutedCurve<Curve> {
-    fn to_same_geometry(&self) -> Surface { Surface::RevolutedCurve(Processor::new(self.clone())) }
+    fn to_same_geometry(&self) -> Surface {
+        Surface::RevolutedCurve(Processor::new(self.clone()))
+    }
 }
 
 impl SearchNearestParameter<D2> for Surface {

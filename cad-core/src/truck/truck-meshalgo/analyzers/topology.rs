@@ -3,15 +3,8 @@ use itertools::Itertools;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use truck_topology::shell::ShellCondition;
 
-/// Extracts boundaries, and check shell condition: closed or orientation.
 pub trait Topology {
-    /// Returns a vector of all boundaries as line strip.
     fn extract_boundaries(&self) -> Vec<Vec<usize>>;
-    /// Determines the shell conditions: non-regular, regular, oriented, or closed.  
-    /// The complexity increases in proportion to the number of edges.
-    ///
-    /// Examples for each condition can be found on the page of
-    /// [`ShellCondition`](https://docs.rs/truck-topology/0.2.0/truck_topology/shell/enum.ShellCondition.html).
     fn shell_condition(&self) -> ShellCondition;
 }
 
@@ -112,6 +105,10 @@ impl Topology for Faces {
 }
 
 impl Topology for PolygonMesh {
-    fn extract_boundaries(&self) -> Vec<Vec<usize>> { self.faces().extract_boundaries() }
-    fn shell_condition(&self) -> ShellCondition { self.faces().shell_condition() }
+    fn extract_boundaries(&self) -> Vec<Vec<usize>> {
+        self.faces().extract_boundaries()
+    }
+    fn shell_condition(&self) -> ShellCondition {
+        self.faces().shell_condition()
+    }
 }

@@ -6,11 +6,7 @@ use truck_topology::{compress::*, Vertex, *};
 pub use vtkio;
 use vtkio::model::{Attributes, *};
 
-/// Trait for convert to [`DataSet`]
 pub trait ToDataSet {
-    /// Converts to [`DataSet`]
-    /// # Remarks
-    /// The `DataSet` is generated assuming output in XML format.
     fn to_data_set(&self) -> DataSet;
 }
 

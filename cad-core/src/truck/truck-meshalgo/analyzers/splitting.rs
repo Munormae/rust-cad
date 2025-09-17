@@ -1,132 +1,9 @@
 use super::*;
 use std::f64::consts::PI;
 
-/// Splitting the faces into several clusters.
 pub trait Splitting {
-    /// Creates a sub mesh by the face indices.
-    /// # Examples
-    /// ```
-    /// use truck_polymesh::*;
-    /// use truck_meshalgo::analyzers::*;
-    ///
-    /// // cube
-    /// let mesh = PolygonMesh::new(
-    ///     StandardAttributes {
-    ///         positions: vec![
-    ///             Point3::new(0.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 0.0, 1.0),
-    ///             Point3::new(1.0, 0.0, 1.0),
-    ///             Point3::new(1.0, 1.0, 1.0),
-    ///             Point3::new(0.0, 1.0, 1.0),
-    ///         ],
-    ///         ..Default::default()
-    ///     },
-    ///     Faces::from_iter(&[
-    ///         &[3, 2, 1, 0], &[0, 1, 5, 4], &[1, 2, 6, 5],
-    ///         &[2, 3, 7, 6], &[3, 0, 4, 7], &[4, 5, 6, 7],
-    ///     ]),
-    /// );
-    ///
-    /// let submesh = mesh.create_mesh_by_face_indices(&[0, 3, 5]);
-    ///
-    /// // the same attributes vector
-    /// assert_eq!(mesh.positions(), submesh.positions());
-    ///
-    /// let faces0 = Faces::from_iter(&[
-    ///     &[3, 2, 1, 0], &[2, 3, 7, 6], &[4, 5, 6, 7],
-    /// ]);
-    /// assert_eq!(submesh.faces().len(), faces0.len());
-    /// assert_eq!(submesh.faces()[0], faces0[0]);
-    /// assert_eq!(submesh.faces()[1], faces0[1]);
-    /// assert_eq!(submesh.faces()[2], faces0[2]);
-    /// ```
     fn create_mesh_by_face_indices(&self, indices: &[usize]) -> PolygonMesh;
-    /// Extracts polygons such that there exists its normal is the same as its face normal.
-    /// # Arguments
-    /// - `tol`: tolerance to be regarded as the same normal as the face normal
-    /// # Returns
-    /// - The first polygon consists the faces included in planes.
-    /// - The second polygon is the extracted remainder.
-    /// # Panics
-    /// `tol` must be greater than or equal to `0.0`.
-    /// # Examples
-    /// ```
-    /// use truck_polymesh::*;
-    /// use truck_meshalgo::analyzers::*;
-    /// let mesh = PolygonMesh::new(
-    ///     StandardAttributes {
-    ///         positions: vec![
-    ///             Point3::new(0.0, 0.5, 0.0),
-    ///             Point3::new(0.0, 0.5, 1.0),
-    ///             Point3::new(1.0, 0.5, 1.0),
-    ///             Point3::new(1.0, 0.5, 0.0),
-    ///             Point3::new(0.0, 0.0, 2.0),
-    ///             Point3::new(1.0, 0.0, 2.0),
-    ///         ],
-    ///         normals: vec![
-    ///             Vector3::new(0.0, 1.0, 0.0),
-    ///             // displaced normals for smooth rendering
-    ///             Vector3::new(0.0, 1.0, 1.0).normalize(),
-    ///         ],
-    ///         ..Default::default()
-    ///     },
-    ///     Faces::from_iter(&[
-    ///         &[(0, None, Some(0)), (1, None, Some(0)), (2, None, Some(0)), (3, None, Some(0))],
-    ///         &[(2, None, Some(0)), (1, None, Some(0)), (4, None, Some(1)), (5, None, Some(1))],
-    ///     ]),
-    /// );
-    /// let (plane, remained) = mesh.extract_planes(TOLERANCE); // TOLERANCE == 1.0e-7
-    /// assert_eq!(plane.len(), 1); assert_eq!(plane[0], 0);
-    /// assert_eq!(remained.len(), 1); assert_eq!(remained[0], 1);
-    /// ```
     fn extract_planes(&self, tol: f64) -> (Vec<usize>, Vec<usize>);
-    /// Splits into the components.
-    /// # Details
-    /// Two polygons are considered to be in the same component if they share an edge
-    /// whose vertices has the same positions (and normals if `use_normal == true`).
-    /// # Examples
-    /// ```
-    /// use truck_polymesh::*;
-    /// use truck_meshalgo::{analyzers::*, filters::*};
-    ///
-    /// // cube consisting tri_faces
-    /// let mut mesh = PolygonMesh::new(
-    ///     StandardAttributes {
-    ///         positions: vec![
-    ///             Point3::new(0.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 0.0, 1.0),
-    ///             Point3::new(1.0, 0.0, 1.0),
-    ///             Point3::new(1.0, 1.0, 1.0),
-    ///             Point3::new(0.0, 1.0, 1.0),
-    ///         ],
-    ///         ..Default::default()
-    ///     },
-    ///     Faces::from_iter(&[
-    ///         &[3, 2, 0], &[1, 0, 2], &[0, 1, 4], &[5, 4, 1],
-    ///         &[1, 2, 5], &[6, 5, 2], &[2, 3, 6], &[7, 6, 3],
-    ///         &[3, 0, 7], &[4, 7, 0], &[4, 5, 7], &[6, 7, 5],
-    ///     ]),
-    /// );
-    ///
-    /// // sign up normals
-    /// mesh.add_naive_normals(true).put_together_same_attrs(TOLERANCE);
-    ///
-    /// // into components with normals
-    /// let components = mesh.components(true);
-    /// // The number of components is six because the mesh is a cube.
-    /// assert_eq!(components.len(), 6);
-    ///
-    /// // into components without normals
-    /// let components = mesh.components(false);
-    /// // The number of components is one because the mesh is a connected cube.
-    /// assert_eq!(components.len(), 1);
-    /// ```
     fn components(&self, use_normal: bool) -> Vec<Vec<usize>>;
 }
 
@@ -173,11 +50,7 @@ pub trait ExperimentalSplitters {
     fn get_gcurve(&self) -> Vec<f64>;
 }
 
-/// splitting the global faces
 impl ExperimentalSplitters for PolygonMesh {
-    /// separate all faces into two clusters, one with `func` returning true and the other with false.
-    /// # Returns
-    /// (the vector of all faces `f` which `func(f) == true`, the one of the other faces)
     fn faces_into_two_clusters<F: Fn(&[Vertex]) -> bool>(
         &self,
         func: F,
@@ -239,11 +112,6 @@ impl ExperimentalSplitters for PolygonMesh {
     }
 }
 
-/// divide the graph to the connected components.
-/// # Arguments
-/// * adjacency - the adjacency matrix
-/// # Return
-/// * the list of the indices of faces contained in each components
 fn get_components(adjacency: &[Vec<usize>]) -> Vec<Vec<usize>> {
     let mut unchecked = vec![true; adjacency.len()];
     let mut components = Vec::new();

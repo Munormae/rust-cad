@@ -2,16 +2,7 @@ use super::*;
 use rustc_hash::FxHashMap as HashMap;
 use std::f64::consts::PI;
 
-/// subdivision surface algorithms
 pub trait Subdivision {
-    /// Extended Loop method
-    ///
-    /// # Remarks
-    /// Confirm:
-    /// - All faces are triangles.
-    /// - `self.shell_condition()` is `Oriented` or `Closed` before use.
-    ///
-    /// This method does NOT check these conditions.
     fn loop_subdivision(&mut self) -> &mut Self;
 }
 
@@ -26,7 +17,9 @@ struct EdgeInfo {
 
 impl Edge {
     #[inline]
-    fn new(v0: usize, v1: usize) -> Self { Edge(usize::min(v0, v1), usize::max(v0, v1)) }
+    fn new(v0: usize, v1: usize) -> Self {
+        Edge(usize::min(v0, v1), usize::max(v0, v1))
+    }
 }
 
 impl EdgeInfo {
@@ -39,7 +32,9 @@ impl EdgeInfo {
         }
     }
     #[inline]
-    fn add_second_wing(&mut self, second_wing: usize) { self.second_wing = Some(second_wing); }
+    fn add_second_wing(&mut self, second_wing: usize) {
+        self.second_wing = Some(second_wing);
+    }
 }
 
 impl Subdivision for PolygonMesh {

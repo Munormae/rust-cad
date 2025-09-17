@@ -1,26 +1,8 @@
 use super::*;
 use array_macro::array;
 
-/// Find collisions between two polygon meshes and extract interference lines.
-///
-/// # Details
-///
-/// The algorithm for mesh extraction is as follows.
-/// All the triangles are projected toward the axis to form intervals.
-/// By looking at the overlap of these intervals, we can narrow down the interfering triangles.
-/// The overlap of the intervals is obtained by sorting the endpoints.
-///
-/// # Remarks
-///
-/// We see that the surfaces that are in contact are not interfering with each other.
-/// Therefore, polygon meshes included in one plane are not interfering.
 pub trait Collision {
-    /// If `self` and `other` collide, then returns only one interference line.
-    /// Otherwise, returns `None`.
     fn collide_with(&self, other: &PolygonMesh) -> Option<(Point3, Point3)>;
-    /// Extract all interference lines between `self` and `other`.
-    /// # Remarks
-    /// The results is not arranged so that included lines make continuous maximal polyline curve.
     fn extract_interference(&self, other: &PolygonMesh) -> Vec<(Point3, Point3)>;
 }
 
@@ -79,7 +61,8 @@ fn tri_to_seg(tri: [Point3; 3], unit: Vector3) -> (f64, f64) {
 fn sorted_endpoints<I, J>(iter0: I, iter1: J, unit: Vector3) -> Vec<EndPoint>
 where
     I: IntoIterator<Item = [Point3; 3]>,
-    J: IntoIterator<Item = [Point3; 3]>, {
+    J: IntoIterator<Item = [Point3; 3]>,
+{
     let mut res: Vec<EndPoint> = iter0
         .into_iter()
         .enumerate()

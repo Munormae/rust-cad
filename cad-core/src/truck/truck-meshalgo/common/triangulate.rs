@@ -1,6 +1,5 @@
 use super::*;
 
-/// STL face generate from `PolygonMesh`
 #[derive(Debug)]
 pub struct TriangleIter<'a> {
     tri_faces: std::slice::Iter<'a, [Vertex; 3]>,
@@ -41,7 +40,9 @@ impl<'a> Iterator for TriangleIter<'a> {
         Some(res)
     }
     #[inline(always)]
-    fn size_hint(&self) -> (usize, Option<usize>) { (self.len, Some(self.len)) }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len, Some(self.len))
+    }
 }
 
 impl<'a> ExactSizeIterator for TriangleIter<'a> {}
@@ -81,7 +82,9 @@ impl<'a> Triangulate<'a> {
         }
     }
     #[inline(always)]
-    pub fn entity(&self) -> &PolygonMesh { self.entity }
+    pub fn entity(&self) -> &PolygonMesh {
+        self.entity
+    }
 }
 
 impl<'a> IntoIterator for &'a Triangulate<'a> {

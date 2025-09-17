@@ -12,7 +12,9 @@ struct Triangle([Point3; 3]);
 
 impl Triangle {
     #[inline(always)]
-    fn normal(self) -> Vector3 { (self[1] - self[0]).cross(self[2] - self[0]).normalize() }
+    fn normal(self) -> Vector3 {
+        (self[1] - self[0]).cross(self[2] - self[0]).normalize()
+    }
 
     fn is_crossing(self, ray: Ray) -> bool {
         let a = self[0] - self[1];
@@ -28,63 +30,8 @@ impl Triangle {
     }
 }
 
-/// whether a point is in a domain rounded by a closed polygon.
 pub trait IncludingPointInDomain {
-    /// Count signed number of faces crossing ray with origin `point` and direction `ray_direction`.
-    /// Counter increase if the dot product of the ray and the normal of a face is positive,
-    /// and decrease if it is negative.
-    ///
-    /// # Examples
-    /// ```
-    /// use truck_meshalgo::prelude::*;
-    /// let simplex = PolygonMesh::new(
-    ///     StandardAttributes {
-    ///         positions: vec![
-    ///             Point3::new(0.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 0.0, 0.0),
-    ///             Point3::new(0.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 0.0, 1.0),
-    ///         ],
-    ///         ..Default::default()
-    ///     },
-    ///     Faces::from_iter(vec![
-    ///         [0, 2, 1],
-    ///         [0, 1, 3],
-    ///         [0, 3, 2],
-    ///         [1, 2, 3],
-    ///     ]),
-    /// );
-    ///
-    /// assert_eq!(simplex.signed_crossing_faces(Point3::new(0.1, 0.1, 0.1), Vector3::unit_x()), 1);
-    /// assert_eq!(simplex.signed_crossing_faces(Point3::new(-0.1, 0.1, 0.1), Vector3::unit_x()), 0);
-    /// ```
     fn signed_crossing_faces(&self, point: Point3, ray_direction: Vector3) -> isize;
-    /// whether `point` is in a domain rounded by a closed polygon.
-    ///
-    /// # Examples
-    /// ```
-    /// use truck_meshalgo::prelude::*;
-    /// let simplex = PolygonMesh::new(
-    ///     StandardAttributes {
-    ///         positions: vec![
-    ///             Point3::new(0.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 0.0, 0.0),
-    ///             Point3::new(0.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 0.0, 1.0),
-    ///         ],
-    ///         ..Default::default()
-    ///     },
-    ///     Faces::from_iter(vec![
-    ///         [0, 2, 1],
-    ///         [0, 1, 3],
-    ///         [0, 3, 2],
-    ///         [1, 2, 3],
-    ///     ]),
-    /// );
-    ///
-    /// assert!(simplex.inside(Point3::new(0.1, 0.1, 0.1)));
-    /// assert!(!simplex.inside(Point3::new(-0.1, 0.1, 0.1)));
-    /// ```
     fn inside(&self, point: Point3) -> bool;
 }
 

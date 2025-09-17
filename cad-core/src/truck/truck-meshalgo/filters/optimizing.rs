@@ -3,96 +3,9 @@ use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::iter::Iterator;
 use std::ops::{Div, Mul};
 
-/// Filters for optimizing data
 pub trait OptimizingFilter {
-    /// remove all unused position, texture coordinates, and normal vectors.
-    /// # Examples
-    /// ```
-    /// use truck_polymesh::*;
-    /// use truck_meshalgo::filters::*;
-    /// let mut mesh = PolygonMesh::new(
-    ///     StandardAttributes {
-    ///         positions: vec![
-    ///             Point3::new(0.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 0.0, 0.0),
-    ///             Point3::new(0.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 0.0, 1.0),
-    ///         ],
-    ///         ..Default::default()
-    ///     },
-    ///     // 0 is not used!
-    ///     Faces::from_iter(&[&[1, 2, 3]]),
-    /// );
-    ///
-    /// assert_eq!(mesh.positions().len(), 4);
-    /// mesh.remove_unused_attrs();
-    /// assert_eq!(mesh.positions().len(), 3);
-    /// ```
     fn remove_unused_attrs(&mut self) -> &mut Self;
-    /// Removes degenerate polygons.
-    /// # Examples
-    /// ```
-    /// use truck_polymesh::*;
-    /// use truck_meshalgo::filters::*;
-    /// let mut mesh = PolygonMesh::new(
-    ///     StandardAttributes {
-    ///         positions: vec![
-    ///             Point3::new(0.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 0.0, 0.0),
-    ///             Point3::new(0.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 0.0, 1.0),
-    ///         ],
-    ///         ..Default::default()
-    ///     },
-    ///     Faces::from_iter(&[
-    ///         &[0, 1, 2],
-    ///         &[2, 1, 2], // degenerate face!
-    ///         &[2, 1, 3],
-    ///     ]),
-    /// );
-    ///
-    /// assert_eq!(mesh.faces().len(), 3);
-    /// mesh.remove_degenerate_faces();
-    /// assert_eq!(mesh.faces().len(), 2);
-    /// ```
     fn remove_degenerate_faces(&mut self) -> &mut Self;
-    /// Gives the same indices to the same positions, texture coordinate, and normal vectors, respectively.
-    /// # Remarks
-    /// No longer needed attributes are NOT autoremoved.
-    /// One can remove such attributes by running [`remove_unused_attrs`] manually.
-    ///
-    /// [`remove_unused_attrs`]: ./trait.WasteEliminatingFilter.html#tymethod.remove_unused_attrs
-    ///
-    /// # Examples
-    /// ```
-    /// use truck_meshalgo::prelude::*;
-    /// let mut mesh = PolygonMesh::new(
-    ///     StandardAttributes {
-    ///         positions: vec![
-    ///             Point3::new(0.0, 0.0, 0.0),
-    ///             Point3::new(1.0, 0.0, 0.0),
-    ///             Point3::new(0.0, 1.0, 0.0),
-    ///             Point3::new(1.0, 1.0, 0.0),
-    ///             Point3::new(0.0, 1.0, 0.0),
-    ///             Point3::new(1.0, 0.0, 0.0),
-    ///         ],
-    ///         ..Default::default()
-    ///     },
-    ///     Faces::from_iter(&[
-    ///         &[0, 1, 2],
-    ///         &[3, 4, 5],
-    ///     ]),
-    /// );
-    ///
-    /// assert_eq!(mesh.faces()[1][1], StandardVertex { pos: 4, uv: None, nor: None });
-    /// mesh.put_together_same_attrs(TOLERANCE);
-    /// assert_eq!(mesh.faces()[1][1], StandardVertex { pos: 2, uv: None, nor: None });
-    ///
-    /// // Remarks: No longer needed attributes are NOT autoremoved!
-    /// assert_eq!(mesh.positions().len(), 6);
-    /// mesh.remove_unused_attrs();
-    /// assert_eq!(mesh.positions().len(), 4);
-    /// ```
     fn put_together_same_attrs(&mut self, tol: f64) -> &mut Self;
 }
 
@@ -343,7 +256,8 @@ fn split_into_nondegenerate(poly: Vec<Vertex>) -> Vec<Vec<Vertex>> {
 }
 
 trait CastIntVector:
-    Sized + ElementWise<Self> + Mul<f64, Output = Self> + Div<f64, Output = Self> {
+    Sized + ElementWise<Self> + Mul<f64, Output = Self> + Div<f64, Output = Self>
+{
     type IntVector: IntVector;
     fn cast_int(self) -> Self::IntVector;
     fn round(self, tol: f64) -> Self::IntVector;
@@ -359,8 +273,12 @@ macro_rules! impl_cast_int {
                     .unwrap_or_else(|| panic!("failed to cast: {self:?}"))
                     .into()
             }
-            fn round(self, tol: f64) -> Self::IntVector { (self / tol).cast_int() }
-            fn zero() -> Self { Self::from([0.0; $n]) }
+            fn round(self, tol: f64) -> Self::IntVector {
+                (self / tol).cast_int()
+            }
+            fn zero() -> Self {
+                Self::from([0.0; $n])
+            }
         }
     };
 }
@@ -430,7 +348,9 @@ impl IntVector for [i64; 3] {
 mod tests {
     use super::*;
 
-    fn into_vertices(iter: &[usize]) -> Vec<Vertex> { iter.iter().map(|i| i.into()).collect() }
+    fn into_vertices(iter: &[usize]) -> Vec<Vertex> {
+        iter.iter().map(|i| i.into()).collect()
+    }
 
     #[test]
     fn degenerate_polygon_test() {

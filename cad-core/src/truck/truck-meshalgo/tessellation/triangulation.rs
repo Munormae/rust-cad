@@ -17,9 +17,13 @@ type MeshedShell = Shell<Point3, PolylineCurve, Option<PolygonMesh>>;
 type MeshedCShell = CompressedShell<Point3, PolylineCurve, Option<PolygonMesh>>;
 
 pub(super) trait SP<S>:
-    Fn(&S, Point3, Option<(f64, f64)>) -> Option<(f64, f64)> + Parallelizable {
+    Fn(&S, Point3, Option<(f64, f64)>) -> Option<(f64, f64)> + Parallelizable
+{
 }
-impl<S, F> SP<S> for F where F: Fn(&S, Point3, Option<(f64, f64)>) -> Option<(f64, f64)> + Parallelizable {}
+impl<S, F> SP<S> for F where
+    F: Fn(&S, Point3, Option<(f64, f64)>) -> Option<(f64, f64)> + Parallelizable
+{
+}
 
 pub(super) fn by_search_parameter<S>(
     surface: &S,
@@ -49,7 +53,6 @@ where
         .or_else(|| surface.search_nearest_parameter(point, None, 100))
 }
 
-/// Tessellates faces
 #[cfg(not(target_arch = "wasm32"))]
 pub(super) fn shell_tessellation<'a, C, S>(
     shell: &Shell<Point3, C, S>,
@@ -234,7 +237,9 @@ struct SurfacePoint {
 }
 
 impl From<(Point2, Point3)> for SurfacePoint {
-    fn from((uv, point): (Point2, Point3)) -> Self { Self { point, uv } }
+    fn from((uv, point): (Point2, Point3)) -> Self {
+        Self { point, uv }
+    }
 }
 
 #[derive(Debug, Default, Clone)]
@@ -424,7 +429,9 @@ impl PolyBoundary {
             2 => {
                 let mut curve1 = open.pop().unwrap();
                 let mut curve0 = open.pop().unwrap();
-                fn end_pts<T: Copy>(vec: &[T]) -> (T, T) { (vec[0], vec[vec.len() - 1]) }
+                fn end_pts<T: Copy>(vec: &[T]) -> (T, T) {
+                    (vec[0], vec[vec.len() - 1])
+                }
                 let ((p0, p1), (q0, q1)) = (end_pts(&curve0), end_pts(&curve1));
                 if !p0.x.near(&p1.x) && !q0.x.near(&q1.x) {
                     if let (Some(urange), _) = surface.try_range_tuple() {
@@ -462,7 +469,6 @@ impl PolyBoundary {
         Self(closed)
     }
 
-    /// whether `c` is included in the domain with boundary = `self`.
     fn include(&self, c: Point2) -> bool {
         let t = 2.0 * std::f64::consts::PI * HashGen::hash1(c);
         let r = Vector2::new(f64::cos(t), f64::sin(t));
@@ -490,7 +496,6 @@ impl PolyBoundary {
             .unwrap_or(false)
     }
 
-    /// Inserts points and adds constraint into triangulation.
     fn insert_to(
         &self,
         triangulation: &mut Cdt,
@@ -548,9 +553,10 @@ fn spade_round(x: f64) -> f64 {
     }
 }
 
-/// Tessellates one surface trimmed by polyline.
 fn trimming_tessellation<S>(surface: &S, polyboundary: &PolyBoundary, tol: f64) -> PolygonMesh
-where S: PreMeshableSurface {
+where
+    S: PreMeshableSurface,
+{
     let mut triangulation = Cdt::new();
     let mut boundary_map = HashMap::<FixedVertexHandle, Point3>::default();
     polyboundary.insert_to(&mut triangulation, &mut boundary_map);
@@ -616,7 +622,6 @@ fn insert_surface(
     });
 }
 
-/// Converts triangulation into `PolygonMesh`.
 fn triangulation_into_polymesh<'a>(
     vertices: VertexIterator<'a, SPoint2, (), CdtEdge<()>, ()>,
     triangles: InnerFaceIterator<'a, SPoint2, (), CdtEdge<()>, ()>,
@@ -645,7 +650,9 @@ fn triangulation_into_polymesh<'a>(
     let tri_faces: Vec<[StandardVertex; 3]> = triangles
         .map(|tri| tri.vertices())
         .filter(|tri| {
-            fn sp2cg(p: SPoint2) -> Point2 { Point2::new(p.x, p.y) }
+            fn sp2cg(p: SPoint2) -> Point2 {
+                Point2::new(p.x, p.y)
+            }
             let tri = array![i => sp2cg(*tri[i].as_ref()); 3];
             let (a, b) = (tri[1] - tri[0], tri[2] - tri[0]);
             let c = tri[0] + (a + b) / 3.0;
