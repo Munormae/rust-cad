@@ -100,7 +100,6 @@ crate::impl_from!(
 crate::impl_from!(BSplineSurface<Point3>, Plane);
 
 fn parabola_surfaces() -> (AlternativeSurface, AlternativeSurface) {
-    // define surfaces
     #[rustfmt::skip]
 	let ctrl0 = vec![
 		vec![Point3::new(-1.0, -1.0, 3.0), Point3::new(-1.0, 0.0, -1.0), Point3::new(-1.0, 1.0, 3.0)],
@@ -121,7 +120,6 @@ fn parabola_surfaces() -> (AlternativeSurface, AlternativeSurface) {
 
 #[test]
 fn independent_intersection() {
-    // prepare geoetries
     let arc00: AlternativeIntersection = NurbsCurve::new(BSplineCurve::new(
         KnotVec::bezier_knot(2),
         vec![
