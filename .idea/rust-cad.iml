@@ -7,6 +7,23 @@
       <sourceFolder url="file://$MODULE_DIR$/cad-render/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/ifc_core/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-base/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-base/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-derivers/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-geometry/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-geometry/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-geotrait/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-geotrait/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-polymesh/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-polymesh/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-polymesh/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-shapeops/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-shapeops/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-stepio/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-stepio/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-stepio/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-topology/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-topology/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

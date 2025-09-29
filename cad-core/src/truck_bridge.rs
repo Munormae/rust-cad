@@ -1,9 +1,9 @@
 //! Простая «склейка» наших 2D-контуров с truck: Wire → Face → Solid → TriMesh.
 //! Держим всё максимально прямолинейно, чтобы быстро показать геометрию.
 
-use truck_geometry::prelude::*;
-use truck_modeling::*;
-use truck_meshalgo::prelude::*;
+use cryxtal_geometry::prelude::*;
+use cryxtal_modeling::*;
+use cryxtal_meshalgo::prelude::*;
 
 use crate::geom::{EntityKind, Pt2 /*, TruckCurve2*/};
 
@@ -69,16 +69,19 @@ pub fn extrude_face(face: &Face, h: f64) -> Solid {
     face.sweep(&dir)
 }
 
-/// Базовая триангуляция Solid при помощи truck_meshalgo.
+/// Базовая триангуляция Solid при помощи cryxtal_meshalgo.
 pub fn mesh_from_solid(solid: &Solid) -> (Vec<[f32; 3]>, Vec<u32>) {
     let pm: PolygonMesh = solid.triangulation(Default::default());
-    let positions: Vec<[f32; 3]> = pm
+    let vertices: Vec<[f32; 3]> = pm
         .positions()
         .iter()
         .map(|p| [p.x as f32, p.y as f32, p.z as f32])
         .collect();
-    let indices: Vec<u32> = pm.indices().iter().map(|&i| i as u32).collect();
-    (positions, indices)
+    let indices: Vec<u32> = pm
+        .face_iter()
+        .flat_map(|f| f.indices().iter().copied().map(|i| i as u32))
+        .collect();
+    (vertices, indices)
 }
 
 /// Применить 4×4 матрицу (row-major) к позиции в однородных координатах.

@@ -5,7 +5,7 @@ use std::fmt::Write as _;
 
 // math + truck
 use cgmath::Point2;
-use truck_geometry::prelude::*; // BSplineCurve, KnotVec, трейты
+use cryxtal_geometry::prelude::*; // BSplineCurve, KnotVec, трейты
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Grid {

@@ -1,0 +1,31 @@
+[package]
+name = "cryxtal-meshalgo"
+version = "0.4.0"
+edition = "2021"
+description = "mesh algorithms and analysis utilities"
+
+[features]
+default = ["tessellation", "filters", "analyzers"]
+tessellation = []
+filters = []
+analyzers = []
+vtk = []
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+rayon = "1.11.0"
+rustc-hash = "2.1.1"
+thiserror = "2.0.16"
+cryxtal-base = { version = "0.5.0", path = "../cryxtal-base" }
+cryxtal-geotrait = { version = "0.4.0", path = "../cryxtal-geotrait" }
+cryxtal-polymesh = { version = "0.6.0", path = "../cryxtal-polymesh" }
+cryxtal-topology = { version = "0.6.0", path = "../cryxtal-topology" }
+cryxtal-geometry = { version = "0.5.0", path = "../cryxtal-geometry" }
+itertools = "0.14"
+derive_more = "0.99"
+spade = "2.6"
+array-macro = "2.1"
+
+

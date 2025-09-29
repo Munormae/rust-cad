@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use truck_geometry::prelude::*; // Point2, Vector2, Vector3, BSplineCurve, NurbsCurve, KnotVec, ParametricCurve, BoundedCurve
+use cryxtal_geometry::prelude::*; // Point2, Vector2, Vector3, BSplineCurve, NurbsCurve, KnotVec, ParametricCurve, BoundedCurve
 
 // --------------------------- базовые типы (serde/UI) ---------------------------
 

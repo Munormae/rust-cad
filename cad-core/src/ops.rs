@@ -4,7 +4,7 @@ use anyhow::{anyhow, Result};
 
 // math + truck
 use cgmath::Point2;
-use truck_geometry::prelude::*; // BSplineCurve, KnotVec, трейты
+use cryxtal_geometry::prelude::*; // BSplineCurve, KnotVec, трейты
 
 #[inline]
 pub fn snap_to_grid(p: Pt2, step: f32) -> Pt2 {

@@ -1,0 +1,32 @@
+[package]
+name = "cryxtal-stepio"
+version = "0.3.0"
+edition = "2021"
+description = "Reads/writes STEP files from/to truck"
+
+[features]
+default = ["in", "derive"]
+in = ["derive_more", "ruststep", "serde", "cryxtal-geotrait"]
+derive = ["cryxtal-derivers"]
+
+[dependencies]
+chrono = { version = "0.4.42", features = ["wasmbind"] }
+derive_more = { version = "2.0.1", features = ["full"], optional = true }
+ruststep = { version = "0.4.0", optional = true }
+serde = { version = "1.0.222", features = ["derive"], optional = true }
+cryxtal-geometry = { version = "0.5.0", path = "../cryxtal-geometry" }
+cryxtal-geotrait = { version = "0.4.0", path = "../cryxtal-geotrait", optional = true }
+cryxtal-derivers = { version = "0.1.0", path = "../cryxtal-derivers", optional = true }
+cryxtal-modeling = { version = "0.6.0", path = "../cryxtal-modeling" }
+cryxtal-polymesh = { version = "0.6.0", path = "../cryxtal-polymesh" }
+cryxtal-topology = { version = "0.6.0", path = "../cryxtal-topology" }
+vtkio = "0.7.0-rc1"
+
+[dev-dependencies]
+clap = { version = "4.5.47", features = ["derive"] }
+espr-derive = "0.4.0"
+itertools = "0.14.0"
+serde_json = "1.0.145"
+cryxtal-meshalgo = { version = "0.4.0", path = "../cryxtal-meshalgo" }
+cryxtal-shapeops = { path = "../cryxtal-shapeops" }
+proptest = "1.7.0"

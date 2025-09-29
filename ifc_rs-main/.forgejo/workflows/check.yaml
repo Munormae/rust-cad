@@ -1,0 +1,22 @@
+name: All Nix Checks
+
+on: [push]
+
+jobs:
+  checks:
+    runs-on: native
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run Nix Flake Check
+        run: |
+          nix flake check
+      - name: Run Cargo Machete
+        run: |
+          nix run .#exec-cargo-machete
+      - name: Run Cargo Deny
+        run: |
+          nix run .#exec-cargo-deny
+      - name: Run Cargo Nextest
+        run: |
+          nix run .#exec-cargo-nextest

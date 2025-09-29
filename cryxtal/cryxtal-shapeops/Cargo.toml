@@ -1,0 +1,36 @@
+[package]
+name = "cryxtal-shapeops"
+version = "0.4.0"
+edition = "2021"
+description = "Provides boolean operations to Solid"
+
+[features]
+default = ["step-test"]
+step-test = ["cryxtal-stepio"]
+shapeops-tests = []
+
+[dependencies]
+derive_more = { version = "2.0.1", features = ["full"] }
+rustc-hash = "2.1.1"
+itertools = "0.14.0"
+cryxtal-base = { version = "0.5.0", path = "../cryxtal-base" }
+cryxtal-geometry = { version = "0.5.0", path = "../cryxtal-geometry" }
+cryxtal-topology = { version = "0.6.0", path = "../cryxtal-topology" }
+cryxtal-meshalgo = { version = "0.4.0", path = "../cryxtal-meshalgo" }
+
+cryxtal-geotrait = { version = "0.4.0", path = "../cryxtal-geotrait" }
+cryxtal-stepio = { version = "0.3.0", path = "../cryxtal-stepio", optional = true }
+
+[dev-dependencies]
+rand = "0.9.2"
+serde_json = "1.0.145"
+cryxtal-modeling = { version = "0.6.0", path = "../cryxtal-modeling" }
+proptest = "1.7.0"
+cryxtal-polymesh = { version = "0.6.0", path = "../cryxtal-polymesh" }
+
+[[example]]
+name = "punched-cube-shapeops"
+required-features = ["step-test"]
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+getrandom = { version = "0.3.3", features = ["wasm_js"] }

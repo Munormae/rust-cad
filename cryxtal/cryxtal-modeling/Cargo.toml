@@ -1,0 +1,26 @@
+[package]
+name = "cryxtal-modeling"
+version = "0.6.0"
+edition = "2021"
+description = "B-Rep modeling utilities built on cryxtal geometry/topology"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+rustc-hash = "2.1.1"
+thiserror = "2.0.16"
+cryxtal-base = { version = "0.5.0", path = "../cryxtal-base" }
+cryxtal-geometry = { version = "0.5.0", path = "../cryxtal-geometry" }
+cryxtal-topology = { version = "0.6.0", path = "../cryxtal-topology" }
+cryxtal-polymesh = { version = "0.6.0", path = "../cryxtal-polymesh" }
+cryxtal-geotrait = { version = "0.4.0", path = "../cryxtal-geotrait" }
+cryxtal-derivers = { version = "0.1.0", path = "../cryxtal-derivers" }
+derive_more = "0.99"
+serde = { version = "1", features = ["derive"] }
+itertools = "0.13"
+
+[dev-dependencies]
+proptest = "1.7"
+
+

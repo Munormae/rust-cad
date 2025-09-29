@@ -7,16 +7,15 @@ use std::collections::BTreeMap;
 
 use crate::mesh::Mesh;
 
-// Truck geometry: кривые/узлы — всегда доступны
-use truck_geometry::prelude::*; // BSplineCurve, KnotVec, Point3, ..
+// Cryxtal geometry: кривые/узлы — всегда доступны
+use cryxtal_geometry::prelude::*; // BSplineCurve, KnotVec, Point3, ..
 
-// ---- B-Rep: опционально через фичу `truck-brep` ----
-#[cfg(feature = "truck-brep")]
-use truck_modeling::Solid;
+#[cfg(feature = "cryxtal-brep")]
+use cryxtal_modeling::Solid;
 
-#[cfg(not(feature = "truck-brep"))]
+#[cfg(not(feature = "cryxtal-brep"))]
 #[derive(Debug, Clone)]
-pub struct SolidStub; // лёгкая заглушка, когда truck_modeling не подключён
+pub struct SolidStub; // лёгкая заглушка, когда cryxtal_modeling не подключён
 
 /// Удобная 3D-точка в мм (без cgmath)
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -72,12 +71,12 @@ pub enum ElementGeom {
 
     /// Точное тело (B-Rep). В JSON **не** пишем.
     #[serde(skip)]
-    #[cfg(feature = "truck-brep")]
+    #[cfg(feature = "cryxtal-brep")]
     Brep(Solid),
 
     /// Заглушка для сборки без `truck-brep`
     #[serde(skip)]
-    #[cfg(not(feature = "truck-brep"))]
+    #[cfg(not(feature = "cryxtal-brep"))]
     Brep(SolidStub),
 }
 
@@ -178,7 +177,7 @@ impl RebarPath {
 
 impl ElementGeom {
     /// Ссылка на B-Rep (есть только при включённой фиче)
-    #[cfg(feature = "truck-brep")]
+    #[cfg(feature = "cryxtal-brep")]
     pub fn as_brep(&self) -> Option<&Solid> {
         match self {
             ElementGeom::Brep(s) => Some(s),
@@ -187,7 +186,7 @@ impl ElementGeom {
     }
 
     /// Мут-ссылка на B-Rep
-    #[cfg(feature = "truck-brep")]
+    #[cfg(feature = "cryxtal-brep")]
     pub fn as_brep_mut(&mut self) -> Option<&mut Solid> {
         match self {
             ElementGeom::Brep(s) => Some(s),
@@ -196,11 +195,11 @@ impl ElementGeom {
     }
 
     /// Без фичи — всегда None
-    #[cfg(not(feature = "truck-brep"))]
+    #[cfg(not(feature = "cryxtal-brep"))]
     pub fn as_brep(&self) -> Option<()> {
         None
     }
-    #[cfg(not(feature = "truck-brep"))]
+    #[cfg(not(feature = "cryxtal-brep"))]
     pub fn as_brep_mut(&mut self) -> Option<()> {
         None
     }
@@ -222,9 +221,9 @@ impl Element3D {
             ElementGeom::Mesh { positions, indices } => {
                 triangulate_from_mesh(positions, indices, self.xform)
             }
-            #[cfg(feature = "truck-brep")]
+            #[cfg(feature = "cryxtal-brep")]
             ElementGeom::Brep(_) => Mesh::default(), // TODO: триангуляция B-Rep
-            #[cfg(not(feature = "truck-brep"))]
+            #[cfg(not(feature = "cryxtal-brep"))]
             ElementGeom::Brep(_) => Mesh::default(),
         }
     }

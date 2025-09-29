@@ -1,0 +1,22 @@
+[package]
+name = "cryxtal-geometry"
+version = "0.5.0"
+edition = "2021"
+description = "Geometrical structs: knot vector, B-spline and NURBS"
+keywords = ["cryxtal", "geometry", "graphics"]
+categories = ["graphics"]
+
+[dependencies]
+serde            = { version = "1", features = ["derive"] }
+thiserror        = "2"
+cryxtal-base     = { workspace = true }
+# дерив-макросы нужны в обычной сборке
+cryxtal-geotrait = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+# в тестах добавляем ещё feature "polynomial" (фичи объединятся: derive + polynomial)
+cryxtal-geotrait = { workspace = true, features = ["derive", "polynomial"] }
+proptest         = { version = "1.7", features = ["attr-macro"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }

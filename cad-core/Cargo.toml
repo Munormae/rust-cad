@@ -17,13 +17,13 @@ bitvec = "1.0"
 regex = "1"
 lazy_static = "1.5.0"
 rayon = "1.11.0"
-truck-base     = { git = "https://github.com/ricosjp/truck" }
-truck-geometry = { git = "https://github.com/ricosjp/truck" }
-truck-modeling = { git = "https://github.com/ricosjp/truck", optional = true }
+cryxtal-base     = { path = "../cryxtal/cryxtal-base" }
+cryxtal-geometry = { path = "../cryxtal/cryxtal-geometry" }
+cryxtal-modeling = { path = "../cryxtal/cryxtal-modeling", optional = true }
 once_cell = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 
 [features]
 default = []
-truck-brep = ["dep:truck-modeling"]
+cryxtal-brep = ["dep:cryxtal-modeling"]
 ifopsh_with_rocksdb = ["dep:rocksdb"]
