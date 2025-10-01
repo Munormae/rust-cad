@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
-use quote::ToTokens;
 use syn::{GenericArgument, PathArguments, PathSegment, Type};
+use syn::__private::ToTokens;
 
 #[derive(Debug)]
 pub enum IdOrListType {

@@ -24,6 +24,11 @@
       <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-stepio/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-topology/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/cryxtal/cryxtal-topology/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/ifc_rs-main/ifc_rs/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ifc_rs-main/ifc_rs/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ifc_rs-main/ifc_rs/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/ifc_rs-main/ifc_rs_verify_derive/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/ifc_rs-main/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
