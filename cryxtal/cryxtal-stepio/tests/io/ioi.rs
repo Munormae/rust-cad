@@ -1,6 +1,6 @@
-use truck_meshalgo::prelude::*;
-use truck_stepio::{out::*, r#in::*};
-use truck_topology::shell::ShellCondition;
+use cryxtal_meshalgo::prelude::*;
+use cryxtal_stepio::{out::*, r#in::*};
+use cryxtal_topology::shell::ShellCondition;
 
 const STEP_DIRECTORY: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../resources/step/");
 

@@ -1,5 +1,5 @@
-use truck_modeling::*;
-use truck_stepio::out::*;
+use cryxtal_modeling::*;
+use cryxtal_stepio::out::*;
 
 macro_rules! dir ( () => { concat!(env!("CARGO_MANIFEST_DIR"), "/../resources/shape/") });
 

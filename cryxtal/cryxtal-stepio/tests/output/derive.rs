@@ -1,5 +1,5 @@
-use truck_geometry::prelude::*;
-use truck_stepio::out::*;
+use cryxtal_geometry::prelude::*;
+use cryxtal_stepio::out::*;
 
 #[derive(Clone, Debug, StepLength, DisplayByStep)]
 enum LengthCheck {

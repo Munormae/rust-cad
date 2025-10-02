@@ -3,8 +3,7 @@
 use proptest::*;
 use ruststep::{ast::DataSection, tables::*};
 use std::{f64::consts::PI, str::FromStr};
-use truck_geometry::prelude as truck;
-use truck_stepio::{
+use cryxtal_stepio::{
     out::*,
     r#in::{step_geometry::*, *},
 };
@@ -50,12 +49,12 @@ fn exec_cartesian_point(coord: [f64; 3]) {
     let pt = Point2::new(coord[0], coord[1]);
     exec_test_near::<CartesianPointHolder, Point2>(
         pt,
-        &format!("DATA;{}ENDSEC;", truck_stepio::out::StepDisplay::new(pt, 1)),
+        &format!("DATA;{}ENDSEC;", cryxtal_stepio::out::StepDisplay::new(pt, 1)),
     );
     let pt = Point3::from(coord);
     exec_test_near::<CartesianPointHolder, Point3>(
         pt,
-        &format!("DATA;{}ENDSEC;", truck_stepio::out::StepDisplay::new(pt, 1)),
+        &format!("DATA;{}ENDSEC;", cryxtal_stepio::out::StepDisplay::new(pt, 1)),
     );
 }
 
@@ -250,8 +249,8 @@ fn exec_line(org_coord: [f64; 3], vec_elem: [f64; 3]) {
         StepDisplay::new(v, 3),
     );
     let line = step_to_entity::<LineHolder>(&step_str);
-    let res: truck::Line<Point3> = (&line).into();
-    let ans = truck::Line(p, q);
+    let res: cryxtal::Line<Point3> = (&line).into();
+    let ans = cryxtal::Line(p, q);
     assert_near!(res.0, ans.0);
     assert_near!(res.1, ans.1);
 }

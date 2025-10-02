@@ -7,10 +7,10 @@ use std::{
     fmt::{Debug, Display},
     str::FromStr,
 };
-use truck::*;
-use truck_geometry::prelude as truck;
-use truck_polymesh::PolylineCurve;
-use truck_stepio::{out::*, r#in::*};
+use cryxtal::*;
+use cryxtal_geometry::prelude as cryxtal;
+use cryxtal_polymesh::PolylineCurve;
+use cryxtal_stepio::{out::*, r#in::*};
 
 fn oitest<Truck, StepHolder>(t: Truck)
 where
@@ -68,7 +68,7 @@ fn oi() {
     oitest::<Point3, CartesianPointHolder>(Point3::new(1.0, 2.0, 3.0));
     oitest::<Vector2, VectorHolder>(Vector2::new(1.0, 2.0));
     oitest::<Vector3, VectorHolder>(Vector3::new(1.0, 2.0, 3.0));
-    oitest::<truck::Line<Point2>, LineHolder>(truck::Line(
+    oitest::<cryxtal::Line<Point2>, LineHolder>(cryxtal::Line(
         Point2::new(0.0, 1.0),
         Point2::new(2.0, 3.0),
     ));
@@ -203,7 +203,7 @@ fn oi() {
             ),
         ),
     );
-    oitest::<truck::Plane, PlaneHolder>(truck::Plane::new(
+    oitest::<cryxtal::Plane, PlaneHolder>(cryxtal::Plane::new(
         Point3::new(1.0, 2.0, 3.0),
         // The ISO regulations require that the coordinate axes of the Plane must be vertical;
         // on the truck side, the axes do not have to be vertical,
@@ -212,7 +212,7 @@ fn oi() {
         Point3::new(1.0, 3.0, 3.0),
     ));
     oitest::<Processor<step_geometry::Sphere, Matrix4>, SphericalSurfaceHolder>(
-        Processor::new(step_geometry::Sphere(truck::Sphere::new(
+        Processor::new(step_geometry::Sphere(cryxtal::Sphere::new(
             Point3::new(0.0, 0.0, 0.0),
             15.0,
         )))
@@ -240,7 +240,7 @@ fn oi() {
                 Point2::new(1.0, 1.0),
             ))),
             Box::new(step_geometry::Surface::ElementarySurface(
-                step_geometry::ElementarySurface::Plane(truck::Plane::new(
+                step_geometry::ElementarySurface::Plane(cryxtal::Plane::new(
                     Point3::new(1.0, 2.0, 3.0),
                     Point3::new(1.0, 2.0, 4.0),
                     Point3::new(1.0, 1.0, 3.0),

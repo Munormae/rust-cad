@@ -691,36 +691,3 @@ fn polyline_on_surface(
         })
         .collect()
 }
-
-#[test]
-#[ignore]
-#[cfg(not(target_arch = "wasm32"))]
-fn par_bench() {
-    use std::time::Instant;
-    use cryxtal_modeling::*;
-    const JSON: &str = include_str!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../resources/shape/bottle.json"
-    ));
-    let solid: Solid = serde_json::from_str(JSON).unwrap();
-    let shell = solid.into_boundaries().pop().unwrap();
-
-    let instant = Instant::now();
-    (0..100).for_each(|_| {
-        let _shell = shell_tessellation(&shell, 0.01, by_search_parameter);
-    });
-    println!("{}ms", instant.elapsed().as_millis());
-
-    let instant = Instant::now();
-    (0..100).for_each(|_| {
-        let _shell = shell_tessellation_single_thread(&shell, 0.01, by_search_parameter);
-    });
-    println!("{}ms", instant.elapsed().as_millis());
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use cryxtal_geometry::prelude::*;
-    use cryxtal_modeling::*;
-}

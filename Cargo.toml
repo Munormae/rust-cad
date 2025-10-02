@@ -9,7 +9,10 @@ members = [
     "cryxtal/cryxtal-meshalgo",
     "cryxtal/cryxtal-shapeops",
     "cryxtal/cryxtal-stepio",
-    "cryxtal/cryxtal-derivers"
+    "cryxtal/cryxtal-derivers",
+    "cad-core",
+    "cad-render",
+    "cad-app"
 ]
 
 default-members = [
@@ -22,7 +25,10 @@ default-members = [
     "cryxtal/cryxtal-meshalgo",
     "cryxtal/cryxtal-shapeops",
     "cryxtal/cryxtal-stepio",
-    "cryxtal/cryxtal-derivers"
+    "cryxtal/cryxtal-derivers",
+    "cad-core",
+    "cad-render",
+    "cad-app"
 ]
 resolver = "2"
 
