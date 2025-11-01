@@ -1,7 +1,7 @@
-use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use cryxtal_geometry::prelude::*;
 use cryxtal_meshalgo::rexport_polymesh::*;
 use cryxtal_topology::compress::*;
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 type Edge<C> = CompressedEdge<C>;
 type EdgeIndex = CompressedEdgeIndex;

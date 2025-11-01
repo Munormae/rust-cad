@@ -1,9 +1,11 @@
-use crate::*;
-use std::ops::Bound;
-use cryxtal_base::{cgmath64::*, hash::HashGen, tolerance::*};
 use crate::traits::curve::{BoundedCurve, ParameterDivision1D, ParametricCurve};
-use crate::traits::surface::{BoundedSurface, ParameterDivision2D, ParametricSurface, ParametricSurface3D};
-use crate::traits::search_parameter::{D1, SPHint1D, SearchNearestParameter, SearchParameter};
+use crate::traits::search_parameter::{SPHint1D, SearchNearestParameter, SearchParameter, D1};
+use crate::traits::surface::{
+    BoundedSurface, ParameterDivision2D, ParametricSurface, ParametricSurface3D,
+};
+use crate::*;
+use cryxtal_base::{cgmath64::*, hash::HashGen, tolerance::*};
+use std::ops::Bound;
 
 const PRESEARCH_DIVISION: usize = 50;
 

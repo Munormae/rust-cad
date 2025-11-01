@@ -1,9 +1,9 @@
 use super::*;
-use surface::{SsnpVector, SspVector};
 use crate::traits::curve::{ParametricCurve, ParametricCurve3D};
 use crate::traits::surface::{ParametricSurface, ParametricSurface3D};
 use crate::ParameterRange;
 use cryxtal_base::newton::{self, CalcOutput};
+use surface::{SsnpVector, SspVector};
 
 pub fn presearch<C>(curve: &C, point: C::Point, range: (f64, f64), division: usize) -> f64
 where

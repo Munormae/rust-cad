@@ -1,8 +1,8 @@
+use cryxtal_geometry::prelude::{EuclideanSpace, Point3, Rad, Vector3};
 use cryxtal_meshalgo::tessellation::{MeshableShape, MeshedShape};
 use cryxtal_modeling::*;
-use cryxtal_geometry::prelude::{Point3, Vector3, Rad, EuclideanSpace};
-use cryxtal_topology::Solid;
 use cryxtal_polymesh::obj;
+use cryxtal_topology::Solid;
 
 #[test]
 #[cfg(feature = "shapeops-tests")]

@@ -3,6 +3,10 @@ name = "cad-render"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+ifc-ffi = ["cad-core/ifc-ffi"]
+
 [dependencies]
 cad-core = { path = "../cad-core" }
 egui = "0.32.2"

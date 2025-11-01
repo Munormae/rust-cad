@@ -1,15 +1,15 @@
 use super::*;
 use crate::base::*;
 use cryxtal_derivers::{
-    BoundedCurve, Cut, Invertible, ParametricCurve, ParametricSurface, ParameterDivision1D,
-    ParameterDivision2D, SearchNearestParameterD1, SearchParameterD1, SearchParameterD2,
+    BoundedCurve, Cut, Invertible, ParameterDivision1D, ParameterDivision2D, ParametricCurve,
+    ParametricSurface, SearchNearestParameterD1, SearchParameterD1, SearchParameterD2,
 };
-use derive_more::{From, TryInto};
-use serde::{Deserialize, Serialize};
 #[doc(hidden)]
 pub use cryxtal_geometry::prelude::{algo, inv_or_zero};
 pub use cryxtal_geometry::{decorators::*, nurbs::*, specifieds::*};
 pub use cryxtal_polymesh::PolylineCurve;
+use derive_more::{From, TryInto};
+use serde::{Deserialize, Serialize};
 
 /// Modeling-level curve variants built on cryxtal-geometry primitives.
 #[derive(

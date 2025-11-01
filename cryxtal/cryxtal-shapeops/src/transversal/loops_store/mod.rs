@@ -1,11 +1,11 @@
 #![allow(clippy::many_single_char_names)]
 
 use super::*;
-use rustc_hash::FxHashMap as HashMap;
 use cryxtal_base::cgmath64::*;
 use cryxtal_geometry::prelude::*;
 use cryxtal_meshalgo::prelude::*;
 use cryxtal_topology::{Vertex, *};
+use rustc_hash::FxHashMap as HashMap;
 
 type PolylineCurve = cryxtal_meshalgo::prelude::PolylineCurve<Point3>;
 

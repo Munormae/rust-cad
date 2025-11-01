@@ -1,7 +1,7 @@
-use crate::{errors::Error, wire::EdgeIter, *};
 use crate::format::{DebugDisplay, MutexFmt};
-use std::fmt::Formatter;
+use crate::{errors::Error, wire::EdgeIter, *};
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+use std::fmt::Formatter;
 
 impl<P, C, S> Face<P, C, S> {
     #[inline(always)]
@@ -336,7 +336,7 @@ impl<P, C, S> Face<P, C, S> {
                             Some(())
                         } else {
                             None
-                        }
+                        };
                     }
                 }
                 vemap.insert(edge.front().id(), edge);

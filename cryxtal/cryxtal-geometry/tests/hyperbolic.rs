@@ -1,6 +1,6 @@
-use proptest::prelude::*;
-use cryxtal_geometry::prelude::*;
 use cryxtal_base::prop_assert_near;
+use cryxtal_geometry::prelude::*;
+use proptest::prelude::*;
 
 proptest! {
     #[test]

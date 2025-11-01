@@ -322,16 +322,16 @@ where
 
 #[cfg(test)]
 mod partial_torus {
+    use super::{Face as TFace, Shell as TShell};
     use crate::*;
+    use cryxtal_base::cgmath64::cgmath::InnerSpace;
+    use cryxtal_base::tolerance::TOLERANCE;
+    use cryxtal_geometry::prelude::{Point3, Rad, Vector3};
     use cryxtal_geotrait::{
         BoundedCurve, BoundedSurface, ParametricCurve, ParametricSurface, ParametricSurface3D,
         SearchParameter,
     };
-    use cryxtal_base::tolerance::TOLERANCE;
-    use cryxtal_base::cgmath64::cgmath::InnerSpace;
-    use cryxtal_geometry::prelude::{Point3, Vector3, Rad};
     use cryxtal_topology::shell;
-    use super::{Face as TFace, Shell as TShell};
     fn test_surface_orientation(surface: &Surface, sign: f64) {
         let rev = match surface {
             Surface::Plane(_) => return,
@@ -380,16 +380,36 @@ mod partial_torus {
         let w = builder::rsweep(&v, Point3::new(0.75, 0.0, 0.0), Vector3::unit_y(), Rad(7.0));
         let face = builder::try_attach_plane(&[w]).unwrap();
         test_shell(&shell![face.clone()], 1.0);
-        let torus = builder::rsweep(&face, Point3::new(0.0, 0.0, 0.0), Vector3::unit_z(), Rad(2.0));
+        let torus = builder::rsweep(
+            &face,
+            Point3::new(0.0, 0.0, 0.0),
+            Vector3::unit_z(),
+            Rad(2.0),
+        );
         test_shell(&torus.boundaries()[0], 1.0);
         assert!(torus.is_geometric_consistent());
-        let torus = builder::rsweep(&face, Point3::new(0.0, 0.0, 0.0), Vector3::unit_z(), Rad(5.0));
+        let torus = builder::rsweep(
+            &face,
+            Point3::new(0.0, 0.0, 0.0),
+            Vector3::unit_z(),
+            Rad(5.0),
+        );
         test_shell(&torus.boundaries()[0], 1.0);
         assert!(torus.is_geometric_consistent());
-        let torus = builder::rsweep(&face, Point3::new(0.0, 0.0, 0.0), Vector3::unit_z(), Rad(-2.0));
+        let torus = builder::rsweep(
+            &face,
+            Point3::new(0.0, 0.0, 0.0),
+            Vector3::unit_z(),
+            Rad(-2.0),
+        );
         test_shell(&torus.boundaries()[0], -1.0);
         assert!(torus.is_geometric_consistent());
-        let torus = builder::rsweep(&face, Point3::new(0.0, 0.0, 0.0), Vector3::unit_z(), Rad(-5.0));
+        let torus = builder::rsweep(
+            &face,
+            Point3::new(0.0, 0.0, 0.0),
+            Vector3::unit_z(),
+            Rad(-5.0),
+        );
         test_shell(&torus.boundaries()[0], -1.0);
         assert!(torus.is_geometric_consistent());
     }

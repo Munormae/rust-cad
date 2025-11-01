@@ -3,6 +3,8 @@
 /// re-export [`ruststep`](https://docs.rs/ruststep/latest/ruststep/)
 pub use ruststep;
 
+use cryxtal_geometry::prelude as truck;
+use cryxtal_topology::compress::*;
 use ruststep::{
     ast::{DataSection, EntityInstance, Name, Parameter, SubSuperRecord},
     primitive::Logical,
@@ -12,8 +14,6 @@ use ruststep::{
 use serde::{Deserialize, Serialize};
 use std::result::Result;
 use std::{collections::HashMap, f64::consts::PI};
-use cryxtal_geometry::prelude as truck;
-use cryxtal_topology::compress::*;
 
 /// Geometry parsed from STEP that can be handled by truck
 pub mod step_geometry;
@@ -721,11 +721,15 @@ pub struct Vector {
 }
 impl From<&Vector> for Vector2 {
     #[inline(always)]
-    fn from(vec: &Vector) -> Self { Self::from(&vec.orientation) * vec.magnitude }
+    fn from(vec: &Vector) -> Self {
+        Self::from(&vec.orientation) * vec.magnitude
+    }
 }
 impl From<&Vector> for Vector3 {
     #[inline(always)]
-    fn from(vec: &Vector) -> Self { Self::from(&vec.orientation) * vec.magnitude }
+    fn from(vec: &Vector) -> Self {
+        Self::from(&vec.orientation) * vec.magnitude
+    }
 }
 
 /// `placement`
@@ -740,11 +744,15 @@ pub struct Placement {
 }
 impl From<&Placement> for Point2 {
     #[inline(always)]
-    fn from(p: &Placement) -> Self { Self::from(&p.location) }
+    fn from(p: &Placement) -> Self {
+        Self::from(&p.location)
+    }
 }
 impl From<&Placement> for Point3 {
     #[inline(always)]
-    fn from(p: &Placement) -> Self { Self::from(&p.location) }
+    fn from(p: &Placement) -> Self {
+        Self::from(&p.location)
+    }
 }
 
 /// `axis1_placement`
@@ -986,7 +994,9 @@ pub struct Polyline {
 }
 impl<'a, P: From<&'a CartesianPoint>> From<&'a Polyline> for PolylineCurve<P> {
     #[inline(always)]
-    fn from(poly: &'a Polyline) -> Self { Self(poly.points.iter().map(|pt| P::from(pt)).collect()) }
+    fn from(poly: &'a Polyline) -> Self {
+        Self(poly.points.iter().map(|pt| P::from(pt)).collect())
+    }
 }
 
 /// `b_spline_curve_form`

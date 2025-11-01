@@ -1,9 +1,9 @@
-use crate::Bound;
 use super::*;
+use crate::Bound;
+use crate::PRESEARCH_DIVISION;
 use algo::surface::{SsnpVector, SspVector};
 use control_point::ControlPoint;
 use std::ops::RangeBounds;
-use crate::PRESEARCH_DIVISION;
 
 impl<C0, C1> HomotopySurface<C0, C1> {
     #[inline(always)]

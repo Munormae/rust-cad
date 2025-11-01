@@ -1,7 +1,7 @@
 use super::*;
-use shell::ShellCondition;
 use cryxtal_geometry::prelude::*;
 use cryxtal_topology::Vertex;
+use shell::ShellCondition;
 const TOL: f64 = 0.05;
 
 fn line(v0: &Vertex<Point3>, v1: &Vertex<Point3>) -> Edge<Point3, BSplineCurve<Point3>> {

@@ -1,17 +1,17 @@
 use super::*;
+use crate::errors::Error;
+use crate::prelude::algo::surface::{SsnpVector, SspVector};
+use crate::prelude::{
+    BoundedSurface, BoundingBox, EuclideanSpace, Homogeneous, IncludeCurve, Invertible,
+    MetricSpace, ParameterDivision2D, ParametricSurface, ParametricSurface3D, Point3, SPHint2D,
+    SearchNearestParameter, SearchParameter, Tolerance, Transformed, Vector3, Vector4, D2,
+};
+use cryxtal_base::cgmath64::InnerSpace;
+use cryxtal_base::cgmath_extend_traits::{multi_rat_der, rat_der};
+use cryxtal_base::hash::HashGen;
 use cryxtal_geotrait::algo::surface;
 use cryxtal_geotrait::ParameterRange;
-use crate::errors::Error;
-use cryxtal_base::hash::HashGen;
-use crate::prelude::{
-    BoundedSurface, BoundingBox, D2, EuclideanSpace, Homogeneous, IncludeCurve, Invertible,
-    MetricSpace, ParametricSurface, ParametricSurface3D, ParameterDivision2D, Point3, SearchNearestParameter,
-    SearchParameter, SPHint2D, Tolerance, Transformed, Vector3, Vector4,
-};
-use cryxtal_geotrait::{ParametricCurve, BoundedCurve};
-use cryxtal_base::cgmath_extend_traits::{multi_rat_der, rat_der};
-use cryxtal_base::cgmath64::InnerSpace;
-use crate::prelude::algo::surface::{SsnpVector, SspVector};
+use cryxtal_geotrait::{BoundedCurve, ParametricCurve};
 
 impl<V> NurbsSurface<V> {
     #[inline(always)]

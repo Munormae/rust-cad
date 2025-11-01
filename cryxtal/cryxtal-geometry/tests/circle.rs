@@ -1,7 +1,7 @@
-use proptest::prelude::*;
 use cryxtal_base::prop_assert_near;
-use std::f64::consts::PI;
 use cryxtal_geometry::prelude::*;
+use proptest::prelude::*;
+use std::f64::consts::PI;
 
 proptest! {
     #[test]

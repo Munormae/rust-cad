@@ -1,8 +1,8 @@
 use crate::*;
-use rustc_hash::FxHashMap as HashMap;
-use std::convert::identity;
 use cryxtal_base::tolerance::TOLERANCE;
 use cryxtal_topology::{compress::*, Vertex, *};
+use rustc_hash::FxHashMap as HashMap;
+use std::convert::identity;
 pub use vtkio;
 use vtkio::model::{Attributes, *};
 

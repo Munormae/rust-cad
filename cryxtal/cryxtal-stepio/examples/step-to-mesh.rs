@@ -1,10 +1,10 @@
 //! Parse STEP data, extract shape, and meshing.
 
 use clap::Parser;
-use std::path::Path;
 use cryxtal_meshalgo::prelude::*;
 use cryxtal_stepio::r#in::*;
 use cryxtal_topology::compress::*;
+use std::path::Path;
 
 #[derive(Parser, Debug)]
 struct Args {

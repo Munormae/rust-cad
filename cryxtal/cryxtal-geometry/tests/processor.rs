@@ -1,6 +1,6 @@
-use proptest::prelude::*;
 use cryxtal_base::prop_assert_near;
 use cryxtal_geometry::prelude::*;
+use proptest::prelude::*;
 type PResult = std::result::Result<(), TestCaseError>;
 
 fn exec_compatible_with_bspcurve(ycoords: [f64; 7], mat: [f64; 9]) -> PResult {

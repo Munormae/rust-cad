@@ -1,8 +1,8 @@
 use super::{Result, *};
 use cryxtal_geometry::prelude::*;
+use cryxtal_geometry::prelude::{Matrix3, Matrix4, One, Processor, RevolutedCurve, Transformed};
 use cryxtal_modeling::{Curve as ModelingCurve, Surface as ModelingSurface};
 use cryxtal_polymesh::PolylineCurve;
-use cryxtal_geometry::prelude::{RevolutedCurve, Processor, Matrix4, Matrix3, Transformed, One};
 
 impl DisplayByStep for Point2 {
     fn fmt(&self, idx: usize, f: &mut Formatter<'_>) -> Result {
@@ -87,7 +87,9 @@ where
     P::Diff: ConstStepLength,
 {
     #[inline(always)]
-    fn step_length(&self) -> usize { <Self as ConstStepLength>::LENGTH }
+    fn step_length(&self) -> usize {
+        <Self as ConstStepLength>::LENGTH
+    }
 }
 
 impl<P> ConstStepLength for Line<P>
@@ -101,7 +103,8 @@ where
 impl<P> StepCurve for Line<P> {}
 
 impl<P> DisplayByStep for PolylineCurve<P>
-where P: Copy + ConstStepLength + DisplayByStep
+where
+    P: Copy + ConstStepLength + DisplayByStep,
 {
     fn fmt(&self, idx: usize, f: &mut Formatter<'_>) -> Result {
         f.write_fmt(format_args!(
@@ -115,13 +118,16 @@ where P: Copy + ConstStepLength + DisplayByStep
 
 impl<P: ConstStepLength> StepLength for PolylineCurve<P> {
     #[inline(always)]
-    fn step_length(&self) -> usize { 1 + self.0.len() * P::LENGTH }
+    fn step_length(&self) -> usize {
+        1 + self.0.len() * P::LENGTH
+    }
 }
 
 impl<P> StepCurve for PolylineCurve<P> {}
 
 impl<P> DisplayByStep for BSplineCurve<P>
-where P: Copy + ConstStepLength + DisplayByStep
+where
+    P: Copy + ConstStepLength + DisplayByStep,
 {
     fn fmt(&self, idx: usize, f: &mut Formatter<'_>) -> Result {
         let (knots, multi) = self.knot_vec().to_single_multi();
@@ -144,7 +150,9 @@ where P: Copy + ConstStepLength + DisplayByStep
 
 impl<P> StepLength for BSplineCurve<P> {
     #[inline(always)]
-    fn step_length(&self) -> usize { self.control_points().len() + 1 }
+    fn step_length(&self) -> usize {
+        self.control_points().len() + 1
+    }
 }
 
 impl<P> StepCurve for BSplineCurve<P> {}
@@ -192,7 +200,9 @@ where
 
 impl<V> StepLength for NurbsCurve<V> {
     #[inline(always)]
-    fn step_length(&self) -> usize { self.control_points().len() + 1 }
+    fn step_length(&self) -> usize {
+        self.control_points().len() + 1
+    }
 }
 
 impl<V> StepCurve for NurbsCurve<V> {}
@@ -348,7 +358,9 @@ impl_const_step_length!(Processor<TrimmedCurve<UnitParabola<Point3>>, Matrix4>, 
 
 impl<C, M: One> StepCurve for Processor<C, M> {
     #[inline(always)]
-    fn same_sense(&self) -> bool { self.orientation() }
+    fn same_sense(&self) -> bool {
+        self.orientation()
+    }
 }
 
 impl<C, S0, S1> DisplayByStep for IntersectionCurve<C, S0, S1>
@@ -390,7 +402,9 @@ where
 
 impl<C: StepCurve, S0, S1> StepCurve for IntersectionCurve<C, S0, S1> {
     #[inline(always)]
-    fn same_sense(&self) -> bool { self.leader().same_sense() }
+    fn same_sense(&self) -> bool {
+        self.leader().same_sense()
+    }
 }
 
 impl<C, S> DisplayByStep for PCurve<C, S>
@@ -419,7 +433,9 @@ where
 }
 
 impl<C: StepLength, S: StepLength> StepLength for PCurve<C, S> {
-    fn step_length(&self) -> usize { 3 + self.curve().step_length() + self.surface().step_length() }
+    fn step_length(&self) -> usize {
+        3 + self.curve().step_length() + self.surface().step_length()
+    }
 }
 
 impl<C, S> ConstStepLength for PCurve<C, S>
@@ -432,7 +448,9 @@ where
 
 impl<C: StepCurve, S> StepCurve for PCurve<C, S> {
     #[inline(always)]
-    fn same_sense(&self) -> bool { self.curve().same_sense() }
+    fn same_sense(&self) -> bool {
+        self.curve().same_sense()
+    }
 }
 
 impl DisplayByStep for ModelingCurve {
@@ -548,7 +566,9 @@ impl_const_step_length!(Processor<Torus, Matrix4>, 5);
 
 impl StepSurface for Processor<Torus, Matrix4> {
     #[inline(always)]
-    fn same_sense(&self) -> bool { self.orientation() }
+    fn same_sense(&self) -> bool {
+        self.orientation()
+    }
 }
 
 impl DisplayByStep for Torus {
@@ -560,7 +580,8 @@ impl_const_step_length!(Torus, 5);
 impl StepSurface for Torus {}
 
 impl<P> DisplayByStep for BSplineSurface<P>
-where P: Copy + DisplayByStep
+where
+    P: Copy + DisplayByStep,
 {
     fn fmt(&self, idx: usize, f: &mut Formatter<'_>) -> Result {
         let control_points = self.control_points();
@@ -598,7 +619,9 @@ where P: Copy + DisplayByStep
 
 impl<P> StepLength for BSplineSurface<P> {
     #[inline(always)]
-    fn step_length(&self) -> usize { 1 + self.control_points().iter().map(Vec::len).sum::<usize>() }
+    fn step_length(&self) -> usize {
+        1 + self.control_points().iter().map(Vec::len).sum::<usize>()
+    }
 }
 impl<P> StepSurface for BSplineSurface<P> {}
 
@@ -660,12 +683,15 @@ where
 
 impl<V> StepLength for NurbsSurface<V> {
     #[inline(always)]
-    fn step_length(&self) -> usize { 1 + self.control_points().iter().map(Vec::len).sum::<usize>() }
+    fn step_length(&self) -> usize {
+        1 + self.control_points().iter().map(Vec::len).sum::<usize>()
+    }
 }
 impl<V> StepSurface for NurbsSurface<V> {}
 
 impl<C> DisplayByStep for ExtrudedCurve<C, Vector3>
-where C: StepLength + DisplayByStep
+where
+    C: StepLength + DisplayByStep,
 {
     fn fmt(&self, idx: usize, f: &mut Formatter<'_>) -> Result {
         let curve = self.entity_curve();
@@ -680,7 +706,9 @@ where C: StepLength + DisplayByStep
     }
 }
 impl<C: StepLength> StepLength for ExtrudedCurve<C, Vector3> {
-    fn step_length(&self) -> usize { 1 + self.entity_curve().step_length() + Vector3::LENGTH }
+    fn step_length(&self) -> usize {
+        1 + self.entity_curve().step_length() + Vector3::LENGTH
+    }
 }
 impl<C: ConstStepLength> ConstStepLength for ExtrudedCurve<C, Vector3> {
     const LENGTH: usize = 1 + C::LENGTH + Vector3::LENGTH;
@@ -689,11 +717,14 @@ impl<C> StepSurface for ExtrudedCurve<C, Vector3> {}
 
 impl<C, T: One> StepSurface for Processor<ExtrudedCurve<C, Vector3>, T> {
     #[inline(always)]
-    fn same_sense(&self) -> bool { self.orientation() }
+    fn same_sense(&self) -> bool {
+        self.orientation()
+    }
 }
 
 impl<C> DisplayByStep for RevolutedCurve<C>
-where C: StepLength + DisplayByStep
+where
+    C: StepLength + DisplayByStep,
 {
     fn fmt(&self, idx: usize, f: &mut Formatter<'_>) -> Result {
         let curve = self.entity_curve();
@@ -713,7 +744,9 @@ where C: StepLength + DisplayByStep
 
 impl<C: StepLength> StepLength for RevolutedCurve<C> {
     #[inline(always)]
-    fn step_length(&self) -> usize { 4 + self.entity_curve().step_length() }
+    fn step_length(&self) -> usize {
+        4 + self.entity_curve().step_length()
+    }
 }
 
 impl<C: ConstStepLength> ConstStepLength for RevolutedCurve<C> {
@@ -722,11 +755,14 @@ impl<C: ConstStepLength> ConstStepLength for RevolutedCurve<C> {
 
 impl<C> StepSurface for RevolutedCurve<C> {
     #[inline(always)]
-    fn same_sense(&self) -> bool { false }
+    fn same_sense(&self) -> bool {
+        false
+    }
 }
 
 impl<C> DisplayByStep for Processor<RevolutedCurve<C>, Matrix4>
-where C: StepLength + Transformed<Matrix4> + DisplayByStep
+where
+    C: StepLength + Transformed<Matrix4> + DisplayByStep,
 {
     fn fmt(&self, idx: usize, f: &mut Formatter<'_>) -> Result {
         let surface = self.entity();
@@ -750,12 +786,16 @@ where C: StepLength + Transformed<Matrix4> + DisplayByStep
     }
 }
 impl<C: StepLength> StepLength for Processor<RevolutedCurve<C>, Matrix4> {
-    fn step_length(&self) -> usize { self.entity().step_length() }
+    fn step_length(&self) -> usize {
+        self.entity().step_length()
+    }
 }
 
 impl<C, T: One> StepSurface for Processor<RevolutedCurve<C>, T> {
     #[inline(always)]
-    fn same_sense(&self) -> bool { !self.orientation() }
+    fn same_sense(&self) -> bool {
+        !self.orientation()
+    }
 }
 
 impl DisplayByStep for ModelingSurface {

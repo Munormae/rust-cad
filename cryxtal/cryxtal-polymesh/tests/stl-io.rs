@@ -1,6 +1,6 @@
-use stl::{IntoStlIterator, StlFace, StlReader, StlType};
 use cryxtal_base::assert_near;
 use cryxtal_polymesh::*;
+use stl::{IntoStlIterator, StlFace, StlReader, StlType};
 type Result<T> = std::result::Result<T, errors::Error>;
 
 #[cfg(feature = "fixtures")]

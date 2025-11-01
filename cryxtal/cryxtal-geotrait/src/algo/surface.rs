@@ -1,10 +1,10 @@
 use newton::Jacobian;
 
 use super::*;
+use crate::traits::curve::{ParametricCurve, ParametricCurve3D};
+use crate::traits::search_parameter::{SPHint1D, SearchNearestParameter, SearchParameter, D1};
 use crate::traits::surface::{ParametricSurface, ParametricSurface3D};
 use cryxtal_base::newton::{self, CalcOutput};
-use crate::traits::curve::{ParametricCurve, ParametricCurve3D};
-use crate::traits::search_parameter::{D1, SPHint1D, SearchNearestParameter, SearchParameter};
 
 pub fn presearch<S>(
     surface: &S,

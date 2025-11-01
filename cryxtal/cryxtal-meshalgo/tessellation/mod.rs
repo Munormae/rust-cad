@@ -1,6 +1,6 @@
 use crate::*;
-use spade::{iterators::*, *};
 use cryxtal_topology::{compress::*, *};
+use spade::{iterators::*, *};
 
 #[cfg(not(target_arch = "wasm32"))]
 mod parallelizable {

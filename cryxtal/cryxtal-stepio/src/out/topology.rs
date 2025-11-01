@@ -1,5 +1,7 @@
 use super::{Result, *};
-use cryxtal_topology::compress::{CompressedShell as CmpShell, CompressedSolid as CmpSolid, CompressedEdgeIndex};
+use cryxtal_topology::compress::{
+    CompressedEdgeIndex, CompressedShell as CmpShell, CompressedSolid as CmpSolid,
+};
 
 #[derive(Clone, Debug)]
 pub(super) struct StepShell<'a, P, C, S> {
@@ -299,7 +301,9 @@ where
     C: StepLength,
     S: StepLength,
 {
-    fn from(solid: &'a CmpSolid<P, C, S>) -> Self { Self::Solid(StepSolid::new(solid, 16)) }
+    fn from(solid: &'a CmpSolid<P, C, S>) -> Self {
+        Self::Solid(StepSolid::new(solid, 16))
+    }
 }
 
 impl<P, C, S> Display for PreStepModel<'_, P, C, S>
@@ -338,7 +342,9 @@ where
     C: StepLength,
     S: StepLength,
 {
-    fn from(shell: &'a CmpShell<P, C, S>) -> Self { Self(shell.into()) }
+    fn from(shell: &'a CmpShell<P, C, S>) -> Self {
+        Self(shell.into())
+    }
 }
 
 impl<'a, P, C, S> From<&'a CmpSolid<P, C, S>> for StepModel<'a, P, C, S>
@@ -347,7 +353,9 @@ where
     C: StepLength,
     S: StepLength,
 {
-    fn from(solid: &'a CmpSolid<P, C, S>) -> Self { Self(solid.into()) }
+    fn from(solid: &'a CmpSolid<P, C, S>) -> Self {
+        Self(solid.into())
+    }
 }
 
 impl<P, C, S> Display for StepModel<'_, P, C, S>

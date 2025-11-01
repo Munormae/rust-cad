@@ -1,12 +1,12 @@
-use std::fmt::Debug;
-use std::iter::FromIterator;
-use std::slice::Iter;
-use cryxtal_base::entry_map::FxEntryMap as EntryMap;
+use crate::format::{DebugDisplay, MutexFmt};
 use crate::*;
+use cryxtal_base::entry_map::FxEntryMap as EntryMap;
 use rayon::prelude::*;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-use crate::format::{DebugDisplay, MutexFmt};
+use std::fmt::Debug;
 use std::fmt::Formatter;
+use std::iter::FromIterator;
+use std::slice::Iter;
 #[derive(Clone, Debug)]
 pub struct AdjacentFace<'a, P, C, S> {
     pub face: &'a Face<P, C, S>,

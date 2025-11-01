@@ -1,7 +1,7 @@
 use crate::builder;
-use std::f64::consts::PI;
 use cryxtal_geometry::prelude::*;
 use cryxtal_topology::*;
+use std::f64::consts::PI;
 
 pub fn rect<C>(r#box: BoundingBox<Point2>, plane: Plane) -> Wire<Point3, C>
 where

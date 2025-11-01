@@ -1,17 +1,17 @@
 use super::*;
 use crate::errors::Error;
-use std::ops::*;
-use cryxtal_geotrait::{
-    ParametricCurve, ParameterDivision1D, SearchNearestParameter, SearchParameter, D1, SPHint1D,
-    Concat, ConcatError, BoundedCurve, ParameterTransform, Cut, Invertible, CurveCollector,
-    ParameterRange, Transformed,
-};
-use cryxtal_geotrait::algo::curve;
-use cryxtal_base::bounding_box::{BoundingBox, Bounded};
-use cryxtal_base::cgmath64::{EuclideanSpace, MetricSpace, InnerSpace, Transform, Zero};
-use cryxtal_base::hash::HashGen;
-use cryxtal_base::tolerance::{Tolerance, Origin};
+use cryxtal_base::bounding_box::{Bounded, BoundingBox};
+use cryxtal_base::cgmath64::{EuclideanSpace, InnerSpace, MetricSpace, Transform, Zero};
 use cryxtal_base::cgmath_extend_traits::Homogeneous;
+use cryxtal_base::hash::HashGen;
+use cryxtal_base::tolerance::{Origin, Tolerance};
+use cryxtal_geotrait::algo::curve;
+use cryxtal_geotrait::{
+    BoundedCurve, Concat, ConcatError, CurveCollector, Cut, Invertible, ParameterDivision1D,
+    ParameterRange, ParameterTransform, ParametricCurve, SPHint1D, SearchNearestParameter,
+    SearchParameter, Transformed, D1,
+};
+use std::ops::*;
 
 impl<P> BSplineCurve<P> {
     pub fn new(knot_vec: KnotVec, control_points: Vec<P>) -> BSplineCurve<P> {
@@ -644,12 +644,8 @@ where
     ) -> Option<f64> {
         let hint = match hint.into() {
             SPHint1D::Parameter(hint) => hint,
-            SPHint1D::Range(x, y) => {
-                curve::presearch(self, point, (x, y), PRESEARCH_DIVISION)
-            }
-            SPHint1D::None => {
-                curve::presearch(self, point, self.range_tuple(), PRESEARCH_DIVISION)
-            }
+            SPHint1D::Range(x, y) => curve::presearch(self, point, (x, y), PRESEARCH_DIVISION),
+            SPHint1D::None => curve::presearch(self, point, self.range_tuple(), PRESEARCH_DIVISION),
         };
         curve::search_nearest_parameter(self, point, hint, trial)
     }
@@ -666,12 +662,8 @@ where
     fn search_parameter<H: Into<SPHint1D>>(&self, point: P, hint: H, trial: usize) -> Option<f64> {
         let hint = match hint.into() {
             SPHint1D::Parameter(hint) => hint,
-            SPHint1D::Range(x, y) => {
-                curve::presearch(self, point, (x, y), PRESEARCH_DIVISION)
-            }
-            SPHint1D::None => {
-                curve::presearch(self, point, self.range_tuple(), PRESEARCH_DIVISION)
-            }
+            SPHint1D::Range(x, y) => curve::presearch(self, point, (x, y), PRESEARCH_DIVISION),
+            SPHint1D::None => curve::presearch(self, point, self.range_tuple(), PRESEARCH_DIVISION),
         };
         curve::search_parameter(self, point, hint, trial)
     }

@@ -11,12 +11,12 @@
     unused_qualifications
 )]
 
+use cryxtal_base::{id::ID, tolerance::*};
+use cryxtal_geotrait::*;
 use parking_lot::Mutex;
 use std::collections::VecDeque;
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
-use cryxtal_base::{id::ID, tolerance::*};
-use cryxtal_geotrait::*;
 
 #[cfg(feature = "rclite")]
 use rclite::Arc;

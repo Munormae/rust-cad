@@ -1,6 +1,5 @@
 use super::{rbf_surface::*, *};
 
-
 impl<S0, S1> ApproxFilletSurface<S0, S1> {
     pub const fn surface0(&self) -> &S0 {
         &self.surface0
@@ -364,15 +363,15 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::prelude::BSplineSurface;
+    use crate::prelude::NurbsSurface;
     use crate::prelude::Plane;
-use crate::prelude::BSplineSurface;
-use crate::prelude::{ApproxFilletSurface, KnotVec};
-use proptest::{prelude::*, property_test};
-    use cryxtal_base::{assert_near, prop_assert_near};
+    use crate::prelude::{ApproxFilletSurface, KnotVec};
     use cryxtal_base::cgmath64::control_point::ControlPoint;
     use cryxtal_base::cgmath64::{InnerSpace, Point3, Vector4};
+    use cryxtal_base::{assert_near, prop_assert_near};
     use cryxtal_geotrait::{ParametricSurface, ParametricSurface3D, SearchParameter};
-    use crate::prelude::NurbsSurface;
+    use proptest::{prelude::*, property_test};
 
     #[property_test]
     fn plane_cylinder(#[strategy = 0.0..=1.0] u: f64, #[strategy = 0.0..=1.0] v: f64) {

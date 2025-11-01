@@ -1,5 +1,5 @@
-use crate::{errors::Error, *};
 use crate::format::{DebugDisplay, MutexFmt};
+use crate::{errors::Error, *};
 use std::fmt::Formatter;
 use thiserror::Error;
 

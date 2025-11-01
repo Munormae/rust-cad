@@ -1,5 +1,5 @@
-use cryxtal_base::cgmath64::control_point::ControlPoint;
 use super::*;
+use cryxtal_base::cgmath64::control_point::ControlPoint;
 
 impl<P: Copy> Line<P> {
     #[inline]

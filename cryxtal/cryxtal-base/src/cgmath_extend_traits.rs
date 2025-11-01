@@ -1,12 +1,11 @@
 use cgmath::*;
 
 pub mod control_point {
+    use cgmath::{
+        BaseFloat, EuclideanSpace, Point1, Point2, Point3, Vector1, Vector2, Vector3, Vector4, Zero,
+    };
     use std::fmt::Debug;
     use std::ops::*;
-    use cgmath::{
-        BaseFloat, EuclideanSpace, Point1, Point2, Point3, Vector1, Vector2, Vector3, Vector4,
-        Zero,
-    };
 
     pub trait ControlPoint<S>:
         Add<Self::Diff, Output = Self>

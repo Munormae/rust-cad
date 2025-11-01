@@ -1,15 +1,22 @@
 use super::*;
 use crate::errors::Error;
+use cryxtal_base::bounding_box::Bounded;
+use cryxtal_base::bounding_box::BoundingBox;
+use cryxtal_base::cgmath64::{
+    EuclideanSpace, Homogeneous, Matrix2, Matrix3, Matrix4, MetricSpace, Point2, Point3, Transform,
+    Vector2, Vector3, Vector4, Zero,
+};
+use cryxtal_base::hash::HashGen;
+use cryxtal_base::tolerance::{Origin, Tolerance};
 use cryxtal_geotrait::algo::surface::{self, SsnpVector, SspVector};
+use cryxtal_geotrait::{BoundedCurve, Concat, ParametricCurve};
+use cryxtal_geotrait::{
+    BoundedSurface, CurveCollector, IncludeCurve, Invertible, ParameterDivision2D, ParameterRange,
+    ParametricSurface, ParametricSurface3D, SPHint2D, SearchNearestParameter, SearchParameter,
+    Transformed, D2,
+};
 use std::iter::FusedIterator;
 use std::ops::*;
-use cryxtal_base::bounding_box::BoundingBox;
-use cryxtal_base::cgmath64::{Homogeneous, MetricSpace, Point2, Point3, Vector2, Vector3, Vector4, Matrix2, Matrix3, Matrix4, Transform, EuclideanSpace, Zero};
-use cryxtal_base::tolerance::{Tolerance, Origin};
-use cryxtal_base::bounding_box::Bounded;
-use cryxtal_geotrait::{ParameterRange, ParametricSurface, ParametricSurface3D, SPHint2D, SearchParameter, SearchNearestParameter, ParameterDivision2D, D2, IncludeCurve, Transformed, BoundedSurface, Invertible, CurveCollector};
-use cryxtal_geotrait::{ParametricCurve, Concat, BoundedCurve};
-use cryxtal_base::hash::HashGen;
 
 impl<P> BSplineSurface<P> {
     #[inline(always)]

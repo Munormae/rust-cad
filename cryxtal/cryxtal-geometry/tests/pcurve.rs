@@ -1,7 +1,7 @@
-use proptest::prelude::*;
+use cryxtal_base::prop_assert_near;
 use cryxtal_geometry::prelude::*;
 use cryxtal_geotrait::polynomial::*;
-use cryxtal_base::prop_assert_near;
+use proptest::prelude::*;
 
 fn exec_pcurve_derivation(
     curve_coef: &[[f64; 2]],

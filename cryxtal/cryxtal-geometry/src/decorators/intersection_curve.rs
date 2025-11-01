@@ -1,5 +1,5 @@
-use cryxtal_base::newton::{self, CalcOutput};
 use super::*;
+use cryxtal_base::newton::{self, CalcOutput};
 
 fn double_projection<S0, S1>(
     surface0: &S0,

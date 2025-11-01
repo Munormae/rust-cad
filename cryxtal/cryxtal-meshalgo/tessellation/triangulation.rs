@@ -4,9 +4,9 @@ use super::*;
 use crate::filters::NormalFilters;
 use crate::Point2;
 use array_macro::array;
-use spade::handles::FixedVertexHandle;
 use itertools::Itertools;
 use rustc_hash::FxHashMap as HashMap;
+use spade::handles::FixedVertexHandle;
 
 #[cfg(not(target_arch = "wasm32"))]
 use rayon::prelude::*;
@@ -696,8 +696,8 @@ fn polyline_on_surface(
 #[ignore]
 #[cfg(not(target_arch = "wasm32"))]
 fn par_bench() {
-    use std::time::Instant;
     use cryxtal_modeling::*;
+    use std::time::Instant;
     const JSON: &str = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../resources/shape/bottle.json"

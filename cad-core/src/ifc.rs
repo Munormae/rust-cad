@@ -4,11 +4,7 @@ use std::ffi::CString;
 
 // Тянем С++ FFI из ifc_core, импорт переименовываем, чтобы не конфликтовал с нашей функцией.
 use ifc_core::{
-    extrusions_len,
-    extrusions_ptr,
-    import_ifc as cxx_import_ifc,
-    ExtrusionRaw,
-    FileRaw,
+    extrusions_len, extrusions_ptr, import_ifc as cxx_import_ifc, ExtrusionRaw, FileRaw,
 };
 
 use crate::model3d::{Element3D, ElementGeom, Model3D, Project3D};
@@ -36,10 +32,11 @@ pub fn import_ifc(path: &str) -> Result<Project3D> {
 
     for ex in extrs {
         // профиль
-        let pts = unsafe {
-            std::slice::from_raw_parts(ex.profile.pts, ex.profile.len as usize)
-        };
-        let profile: Vec<Pt2f> = pts.iter().map(|p| Pt2f::new(p.x as f32, p.y as f32)).collect();
+        let pts = unsafe { std::slice::from_raw_parts(ex.profile.pts, ex.profile.len as usize) };
+        let profile: Vec<Pt2f> = pts
+            .iter()
+            .map(|p| Pt2f::new(p.x as f32, p.y as f32))
+            .collect();
 
         // матрица 4x4
         let mut xf = [[0.0f32; 4]; 4];
@@ -50,7 +47,11 @@ pub fn import_ifc(path: &str) -> Result<Project3D> {
         }
 
         model.elements.push(Element3D {
-            id: { let id = id_counter; id_counter += 1; id },
+            id: {
+                let id = id_counter;
+                id_counter += 1;
+                id
+            },
             name: "IFC Extrusion".into(),
             xform: xf,
             geom: ElementGeom::Extrusion {
@@ -63,5 +64,7 @@ pub fn import_ifc(path: &str) -> Result<Project3D> {
         });
     }
 
-    Ok(Project3D { models: vec![model] })
+    Ok(Project3D {
+        models: vec![model],
+    })
 }

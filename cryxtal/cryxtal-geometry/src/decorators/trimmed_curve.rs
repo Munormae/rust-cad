@@ -44,10 +44,7 @@ where
     }
 }
 
-impl<C> BoundedCurve for TrimmedCurve<C>
-where
-    C: ParametricCurve,
-{}
+impl<C> BoundedCurve for TrimmedCurve<C> where C: ParametricCurve {}
 
 impl<C> Cut for TrimmedCurve<C>
 where
@@ -99,5 +96,3 @@ where
         self.curve.parameter_division(range, tol)
     }
 }
-
-

@@ -1,5 +1,5 @@
-use std::f64::consts::PI;
 use cryxtal_geometry::prelude::*;
+use std::f64::consts::PI;
 
 #[test]
 fn revolve_test() {

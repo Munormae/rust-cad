@@ -1,7 +1,7 @@
 use crate::errors::Error;
+use crate::format::{DebugDisplay, MutexFmt};
 use crate::shell::ShellCondition;
 use crate::*;
-use crate::format::{DebugDisplay, MutexFmt};
 use std::fmt::Formatter;
 use std::vec::Vec;
 

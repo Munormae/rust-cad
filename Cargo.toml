@@ -9,9 +9,10 @@ members = [
     "cryxtal/cryxtal-meshalgo",
     "cryxtal/cryxtal-shapeops",
     "cryxtal/cryxtal-stepio",
-    "cryxtal/cryxtal-derivers"
+    "cryxtal/cryxtal-derivers",
+    "cad-core",
+    "cad-app",
 ]
-
 default-members = [
     "cryxtal/cryxtal-base",
     "cryxtal/cryxtal-geometry",
@@ -22,11 +23,19 @@ default-members = [
     "cryxtal/cryxtal-meshalgo",
     "cryxtal/cryxtal-shapeops",
     "cryxtal/cryxtal-stepio",
-    "cryxtal/cryxtal-derivers"
+    "cryxtal/cryxtal-derivers",
+    "cad-core",
+    "cad-app",
 ]
 resolver = "2"
 
+[workspace.package]
+edition = "2021"
+license = "MIT"
+rust-version = "1.81"
+
 [workspace.dependencies]
+# внутренние (с твоими версиями)
 cryxtal-base     = { path = "cryxtal/cryxtal-base",     version = "0.5.0" }
 cryxtal-geotrait = { path = "cryxtal/cryxtal-geotrait", version = "0.4.0" }
 cryxtal-derivers = { path = "cryxtal/cryxtal-derivers", version = "0.1.0" }
@@ -37,3 +46,18 @@ cryxtal-modeling = { path = "cryxtal/cryxtal-modeling", version = "0.5.0" }
 cryxtal-meshalgo = { path = "cryxtal/cryxtal-meshalgo", version = "0.5.0" }
 cryxtal-shapeops = { path = "cryxtal/cryxtal-shapeops", version = "0.1.0" }
 cryxtal-stepio   = { path = "cryxtal/cryxtal-stepio",   version = "0.1.0" }
+
+# внешние — единые версии везде
+anyhow       = "1"
+thiserror    = "1"
+log          = "0.4"
+env_logger   = "0.11"
+rayon        = "1"
+smallvec     = "1"
+itertools    = "0.13"
+serde        = { version = "1", features = ["derive"] }
+serde_json   = "1"
+bytemuck     = { version = "1", features = ["derive"] }
+bitflags     = "2"
+approx       = "0.5"
+glam         = "0.28"

@@ -1,5 +1,5 @@
-use stl::*;
 use cryxtal_polymesh::*;
+use stl::*;
 
 fn main() {
     let args = &mut std::env::args();

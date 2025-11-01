@@ -1,5 +1,5 @@
-use proptest::prelude::*;
 use cryxtal_geometry::prelude::*;
+use proptest::prelude::*;
 
 #[test]
 fn nurbs_sphere() {

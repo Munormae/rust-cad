@@ -1,6 +1,6 @@
+use cryxtal_base::{cgmath64::*, newton::*, prop_assert_near, tolerance::*};
 use proptest::prelude::*;
 use std::f64::consts::PI;
-use cryxtal_base::{cgmath64::*, newton::*, prop_assert_near, tolerance::*};
 
 proptest! {
     #[test]

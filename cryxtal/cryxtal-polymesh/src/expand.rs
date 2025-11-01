@@ -1,7 +1,7 @@
 use crate::*;
+use cryxtal_base::entry_map::FxEntryMap as EntryMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use cryxtal_base::entry_map::FxEntryMap as EntryMap;
 
 impl<V: Copy + Hash + Debug + Eq, A: Attributes<V>> PolygonMesh<V, A> {
     pub fn expands<T: Copy>(

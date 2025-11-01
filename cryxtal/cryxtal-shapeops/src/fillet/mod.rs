@@ -1,15 +1,15 @@
 #![allow(dead_code)]
 
 use algo::curve::search_closest_parameter;
+use cryxtal_geometry::prelude::*;
 use derive_more::From;
 use itertools::Itertools;
 use std::f64::consts::PI;
-use cryxtal_geometry::prelude::*;
 
 #[cfg(test)]
-use proptest::prelude::*;
-#[cfg(test)]
 use cryxtal_meshalgo::prelude::*;
+#[cfg(test)]
+use proptest::prelude::*;
 
 type PCurveLns = PCurve<Line<Point2>, NurbsSurface<Vector4>>;
 

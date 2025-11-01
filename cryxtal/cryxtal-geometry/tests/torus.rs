@@ -1,8 +1,8 @@
-use proptest::prelude::*;
 use cryxtal_base::prop_assert_near;
+use cryxtal_geometry::prelude::*;
+use proptest::prelude::*;
 use std::f64::consts::PI;
 use std::ops::RangeBounds;
-use cryxtal_geometry::prelude::*;
 
 proptest! {
     #[test]

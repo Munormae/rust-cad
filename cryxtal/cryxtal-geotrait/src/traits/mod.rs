@@ -1,5 +1,5 @@
-use std::ops::Bound;
 use cryxtal_base::cgmath64::*;
+use std::ops::Bound;
 
 pub mod curve;
 pub mod search_parameter;

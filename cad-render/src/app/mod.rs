@@ -1,8 +1,9 @@
 // cad-render/src/app/mod.rs
 use anyhow::Result;
+#[cfg(feature = "ifc-ffi")]
 use cad_core::ifc::import_ifc;
 use cad_core::*;
-use egui::{Context, Key, PointerButton, Sense, Ui};
+use egui::{Button, Context, Key, PointerButton, Sense, Ui};
 
 mod camera;
 mod draw;
@@ -141,6 +142,7 @@ impl AppState {
             ui.separator();
 
             // === IFC ===
+            #[cfg(feature = "ifc-ffi")]
             if ui.button("Import IFC").clicked() {
                 if let Some(path) = rfd::FileDialog::new()
                     .add_filter("IFC", &["ifc"])
@@ -156,6 +158,13 @@ impl AppState {
                         Err(e) => eprintln!("IFC import error: {e}"),
                     }
                 }
+            }
+            #[cfg(not(feature = "ifc-ffi"))]
+            {
+                let resp = ui.add_enabled(false, Button::new("Import IFC"));
+                resp.on_hover_text(
+                    "Rebuild with feature `cad-render/ifc-ffi` to enable IFC import.",
+                );
             }
 
             ui.separator();

@@ -1,12 +1,8 @@
 use super::*;
+use cryxtal_base::assert_near;
+use cryxtal_base::{cgmath64::*, hash::HashGen, tolerance::*};
 use std::fmt::Debug;
 use thiserror::Error;
-use cryxtal_base::{
-    cgmath64::*,
-    hash::HashGen,
-    tolerance::*,
-};
-use cryxtal_base::assert_near;
 
 pub trait Curve {}
 

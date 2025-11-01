@@ -1,7 +1,7 @@
 use super::*;
+use cryxtal_topology::shell::ShellCondition;
 use itertools::Itertools;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-use cryxtal_topology::shell::ShellCondition;
 
 /// Topology analysis (boundary extraction, shell condition).
 pub trait Topology {

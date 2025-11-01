@@ -1,5 +1,5 @@
-use crate::*;
 use crate::format::{DebugDisplay, MutexFmt};
+use crate::*;
 use std::fmt::Formatter;
 
 impl<P> Vertex<P> {

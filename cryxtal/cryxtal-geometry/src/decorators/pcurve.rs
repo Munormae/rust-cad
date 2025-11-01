@@ -1,6 +1,6 @@
-use cryxtal_base::cgmath64::control_point::ControlPoint;
-use crate::PRESEARCH_DIVISION;
 use super::*;
+use crate::PRESEARCH_DIVISION;
+use cryxtal_base::cgmath64::control_point::ControlPoint;
 
 impl<C, S> PCurve<C, S> {
     #[inline(always)]

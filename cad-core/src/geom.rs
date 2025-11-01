@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
-use cryxtal_geometry::prelude::*; // Point2, Vector2, Vector3, BSplineCurve, NurbsCurve, KnotVec, ParametricCurve, BoundedCurve
+use cryxtal_geometry::prelude::*;
+use serde::{Deserialize, Serialize}; // Point2, Vector2, Vector3, BSplineCurve, NurbsCurve, KnotVec, ParametricCurve, BoundedCurve
 
 // --------------------------- базовые типы (serde/UI) ---------------------------
 
@@ -9,12 +9,17 @@ pub struct Pt2 {
     pub y: f32,
 }
 impl Pt2 {
-    pub fn new(x: f32, y: f32) -> Self { Self { x, y } }
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum EntityKind {
-    LineSeg { a: Pt2, b: Pt2 },
+    LineSeg {
+        a: Pt2,
+        b: Pt2,
+    },
 
     /// Углы в радианах
     Arc {
@@ -64,16 +69,22 @@ pub struct Style {
     pub stroke_px: f32,
 }
 impl Default for Style {
-    fn default() -> Self { Self { stroke_px: 1.5 } }
+    fn default() -> Self {
+        Self { stroke_px: 1.5 }
+    }
 }
 
 // --------------------------- конвертеры в truck ---------------------------
 
 impl From<Pt2> for Point2 {
-    fn from(p: Pt2) -> Self { Point2::new(p.x as f64, p.y as f64) }
+    fn from(p: Pt2) -> Self {
+        Point2::new(p.x as f64, p.y as f64)
+    }
 }
 impl From<Point2> for Pt2 {
-    fn from(p: Point2) -> Self { Pt2::new(p.x as f32, p.y as f32) }
+    fn from(p: Point2) -> Self {
+        Pt2::new(p.x as f32, p.y as f32)
+    }
 }
 
 /// Представление кривой truck'ом
@@ -94,9 +105,13 @@ impl EntityKind {
             }
 
             EntityKind::Polyline { pts, closed } => {
-                if pts.len() < 2 { return None; }
+                if pts.len() < 2 {
+                    return None;
+                }
                 let mut ctrl: Vec<Point2> = pts.iter().copied().map(Into::into).collect();
-                if *closed { ctrl.push(ctrl[0]); } // замыкаем
+                if *closed {
+                    ctrl.push(ctrl[0]);
+                } // замыкаем
 
                 // degree=1, открытый равномерный: [0,0, t..., 1,1]
                 let n = ctrl.len();
@@ -108,10 +123,18 @@ impl EntityKind {
                 }
                 kv.extend_from_slice(&[1.0, 1.0]);
 
-                Some(TruckCurve2::BSpline(BSplineCurve::new(KnotVec::from(kv), ctrl)))
+                Some(TruckCurve2::BSpline(BSplineCurve::new(
+                    KnotVec::from(kv),
+                    ctrl,
+                )))
             }
 
-            EntityKind::Arc { center, radius, start_angle, end_angle } => {
+            EntityKind::Arc {
+                center,
+                radius,
+                start_angle,
+                end_angle,
+            } => {
                 let c = (center.x as f64, center.y as f64);
                 let r = *radius as f64;
                 let a0 = *start_angle as f64;
@@ -120,13 +143,19 @@ impl EntityKind {
                 Some(TruckCurve2::Nurbs(nurbs))
             }
 
-            EntityKind::NurbsCurve2D { degree: _deg, knots, ctrl_pts, weights } => {
+            EntityKind::NurbsCurve2D {
+                degree: _deg,
+                knots,
+                ctrl_pts,
+                weights,
+            } => {
                 let ctrl: Vec<Point2> = ctrl_pts.iter().copied().map(Into::into).collect();
                 let kv = KnotVec::from(knots.clone());
                 if let Some(w) = weights {
                     // Правильный конструктор: через try_from_bspline_and_weights
                     let bsp = BSplineCurve::new(kv, ctrl);
-                    let nurbs = NurbsCurve::<Vector3>::try_from_bspline_and_weights(bsp, w.clone()).ok()?;
+                    let nurbs =
+                        NurbsCurve::<Vector3>::try_from_bspline_and_weights(bsp, w.clone()).ok()?;
                     Some(TruckCurve2::Nurbs(nurbs))
                 } else {
                     Some(TruckCurve2::BSpline(BSplineCurve::new(kv, ctrl)))
@@ -146,7 +175,12 @@ impl EntityKind {
                 EntityKind::Text { .. } => vec![],
                 EntityKind::Polyline { pts, .. } => pts.clone(),
                 EntityKind::LineSeg { a, b } => vec![*a, *b],
-                EntityKind::Arc { center, radius, start_angle, end_angle } => {
+                EntityKind::Arc {
+                    center,
+                    radius,
+                    start_angle,
+                    end_angle,
+                } => {
                     let c = (center.x as f64, center.y as f64);
                     let r = *radius as f64;
                     let s = *start_angle as f64;
@@ -165,7 +199,9 @@ impl EntityKind {
 /// Разбиваем на куски ≤ 90°. Возвращаем None, если сборка не удалась.
 fn nurbs_arc_deg2(c: (f64, f64), r: f64, a0: f64, a1: f64) -> Option<NurbsCurve<Vector3>> {
     let mut angs = split_angles(a0, a1);
-    if angs.len() < 2 { angs = vec![a0, a1]; }
+    if angs.len() < 2 {
+        angs = vec![a0, a1];
+    }
     let segs = angs.len() - 1;
 
     let mut ctrl: Vec<Point2> = Vec::with_capacity(2 * segs + 1);
@@ -191,7 +227,9 @@ fn nurbs_arc_deg2(c: (f64, f64), r: f64, a0: f64, a1: f64) -> Option<NurbsCurve<
 
     // degree=2, knots: [0,0,0, s1, ..., 1,1,1]
     let mut kv = vec![0.0, 0.0, 0.0];
-    for i in 1..segs { kv.push(i as f64 / segs as f64); }
+    for i in 1..segs {
+        kv.push(i as f64 / segs as f64);
+    }
     kv.extend_from_slice(&[1.0, 1.0, 1.0]);
 
     let bsp = BSplineCurve::new(KnotVec::from(kv), ctrl);

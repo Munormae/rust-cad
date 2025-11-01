@@ -1,6 +1,6 @@
 use super::*;
-use cryxtal_base::tolerance::{Tolerance, Origin};
 use crate::errors::Error;
+use cryxtal_base::tolerance::{Origin, Tolerance};
 use std::slice::SliceIndex;
 use std::vec::Vec;
 

@@ -1,7 +1,7 @@
-use std::collections::Bound;
 use super::*;
-use std::f64::consts::PI;
 use crate::{INCLUDE_CURVE_TRIALS, PRESEARCH_DIVISION};
+use std::collections::Bound;
+use std::f64::consts::PI;
 
 impl Revolution {
     fn new(origin: Point3, axis: Vector3) -> Self {

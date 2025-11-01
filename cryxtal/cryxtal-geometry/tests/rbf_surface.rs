@@ -1,5 +1,5 @@
-use std::f64::consts::PI;
 use cryxtal_geometry::prelude::{rbf_surface::RadiusFunction, *};
+use std::f64::consts::PI;
 
 #[test]
 fn contact_circle_as_curve() {

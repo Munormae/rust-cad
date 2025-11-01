@@ -1,8 +1,8 @@
-use cryxtal_base::cgmath64::control_point::ControlPoint;
-use cryxtal_geotrait::ToSameGeometry;
-use cryxtal_base::tolerance::TOLERANCE;
-use crate::base::SelfSameGeometry;
 use super::*;
+use crate::base::SelfSameGeometry;
+use cryxtal_base::cgmath64::control_point::ControlPoint;
+use cryxtal_base::tolerance::TOLERANCE;
+use cryxtal_geotrait::ToSameGeometry;
 
 #[cfg(test)]
 mod tests {

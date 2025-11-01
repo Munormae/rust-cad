@@ -1,14 +1,14 @@
-use std::fmt::Debug;
-use std::iter::FromIterator;
-use std::slice::Iter;
-use std::fmt::Formatter;
 use crate::format::DebugDisplay;
-use cryxtal_base::entry_map::FxEntryMap as EntryMap;
 use crate::*;
+use cryxtal_base::entry_map::FxEntryMap as EntryMap;
 use rayon::prelude::*;
 use rustc_hash::FxHashSet as HashSet;
 use std::collections::{vec_deque, VecDeque};
+use std::fmt::Debug;
+use std::fmt::Formatter;
+use std::iter::FromIterator;
 use std::iter::Peekable;
+use std::slice::Iter;
 
 impl<P, C> Wire<P, C> {
     #[inline(always)]

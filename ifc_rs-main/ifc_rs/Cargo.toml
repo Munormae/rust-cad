@@ -14,21 +14,21 @@ homepage = "https://github.com/MetabuildDev/ifc_rs"
 repository = "https://github.com/MetabuildDev/ifc_rs"
 
 [dependencies]
-anyhow.workspace = true
-chrono.workspace = true
-downcast-rs.workspace = true
-bevy_math.workspace = true
-ifc_rs_verify_derive.workspace = true
-itertools.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-strum.workspace = true
-uuid.workspace = true
-winnow.workspace = true
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+downcast-rs = "1.2"
+bevy_math = { version = "0.16", default-features = false, features = ["std"] }
+ifc_rs_verify_derive = { version = "0.1.0-alpha.9", path = "../ifc_rs_verify_derive" }
+itertools = "0.13"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+strum = { version = "0.26", features = ["derive"] }
+uuid = { version = "1.8", features = ["v4"] }
+winnow = "0.6"
 
 [dev-dependencies]
-insta.workspace = true
-regex.workspace = true
+insta = "1.39"
+regex = "1.10"
 
 [profile.dev.package]
 insta.opt-level = 3 

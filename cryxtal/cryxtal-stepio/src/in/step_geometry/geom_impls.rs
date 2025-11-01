@@ -2,17 +2,23 @@ use super::*;
 
 impl ToSameGeometry<Curve3D> for Line<Point3> {
     #[inline]
-    fn to_same_geometry(&self) -> Curve3D { Curve3D::Line(*self) }
+    fn to_same_geometry(&self) -> Curve3D {
+        Curve3D::Line(*self)
+    }
 }
 
 impl ToSameGeometry<Curve3D> for Processor<TrimmedCurve<UnitCircle<Point3>>, Matrix4> {
     #[inline]
-    fn to_same_geometry(&self) -> Curve3D { Curve3D::Conic(Conic3D::Ellipse(*self)) }
+    fn to_same_geometry(&self) -> Curve3D {
+        Curve3D::Conic(Conic3D::Ellipse(*self))
+    }
 }
 
 impl ToSameGeometry<Curve3D> for BSplineCurve<Point3> {
     #[inline]
-    fn to_same_geometry(&self) -> Curve3D { Curve3D::BSplineCurve(self.clone()) }
+    fn to_same_geometry(&self) -> Curve3D {
+        Curve3D::BSplineCurve(self.clone())
+    }
 }
 
 impl Conic3D {

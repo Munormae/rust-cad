@@ -1,7 +1,7 @@
-use std::collections::Bound;
-use crate::PRESEARCH_DIVISION;
 use super::*;
+use crate::PRESEARCH_DIVISION;
 use algo::surface::SspVector;
+use std::collections::Bound;
 
 impl<C, V: Copy> ExtrudedCurve<C, V> {
     #[inline(always)]

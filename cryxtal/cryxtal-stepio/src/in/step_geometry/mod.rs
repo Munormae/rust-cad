@@ -1,13 +1,13 @@
 #![allow(hidden_glob_reexports)]
 use crate as cryxtal_stepio;
-use derive_more::From;
-use serde::{Deserialize, Serialize};
 use cryxtal_derivers::{
     BoundedCurve, DisplayByStep, ParameterDivision1D, ParameterDivision2D, ParametricCurve,
     ParametricSurface3D, SearchNearestParameterD1, SearchNearestParameterD2, SearchParameterD1,
     SearchParameterD2, SelfSameGeometry, StepCurve, StepLength, StepSurface, TransformedM3,
     TransformedM4,
 };
+use derive_more::From;
+use serde::{Deserialize, Serialize};
 
 /// re-export structs in `truck-geometry` and `truck-polymesh`.
 pub mod re_exports {
@@ -238,7 +238,9 @@ pub struct Sphere(pub cryxtal_geometry::prelude::Sphere);
 
 impl crate::out::StepSurface for Processor<Sphere, Matrix4> {
     #[inline(always)]
-    fn same_sense(&self) -> bool { self.orientation() }
+    fn same_sense(&self) -> bool {
+        self.orientation()
+    }
 }
 
 mod sphere;

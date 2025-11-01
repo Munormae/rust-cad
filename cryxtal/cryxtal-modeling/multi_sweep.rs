@@ -1,7 +1,7 @@
 use crate::topo_impls::*;
 use crate::topo_traits::*;
-use cryxtal_topology::*;
 use cryxtal_topology::Result;
+use cryxtal_topology::*;
 
 impl<P, C, T, Pc, Cc> MultiSweep<T, Pc, Cc, Wire<P, C>> for Vertex<P>
 where

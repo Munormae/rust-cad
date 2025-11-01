@@ -1,17 +1,17 @@
 use super::*;
 use crate::errors::Error;
 use crate::Result;
-use cryxtal_geotrait::{
-    ParametricCurve, D1, ParameterDivision1D, ParameterTransform, SPHint1D,
-    SearchNearestParameter, SearchParameter, Cut, Invertible, Concat, ConcatError, BoundedCurve,
-    ParameterRange, Transformed,
-};
-use cryxtal_geotrait::algo;
 use cryxtal_base::bounding_box::{Bounded, BoundingBox};
-use cryxtal_base::cgmath64::{EuclideanSpace, MetricSpace, InnerSpace, Homogeneous};
-use cryxtal_base::tolerance::Tolerance;
-use cryxtal_base::hash::HashGen;
+use cryxtal_base::cgmath64::{EuclideanSpace, Homogeneous, InnerSpace, MetricSpace};
 use cryxtal_base::cgmath_extend_traits::rat_der;
+use cryxtal_base::hash::HashGen;
+use cryxtal_base::tolerance::Tolerance;
+use cryxtal_geotrait::algo;
+use cryxtal_geotrait::{
+    BoundedCurve, Concat, ConcatError, Cut, Invertible, ParameterDivision1D, ParameterRange,
+    ParameterTransform, ParametricCurve, SPHint1D, SearchNearestParameter, SearchParameter,
+    Transformed, D1,
+};
 
 impl<V> NurbsCurve<V> {
     #[inline(always)]

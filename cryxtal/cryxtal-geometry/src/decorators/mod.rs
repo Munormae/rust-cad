@@ -86,9 +86,9 @@ mod homotopy;
 mod intersection_curve;
 mod pcurve;
 mod processor;
+pub mod rbf_surface;
 mod revolved_curve;
-mod trimmed_curve;
-pub mod rbf_surface; // если нужен прямой доступ из вне
+mod trimmed_curve; // если нужен прямой доступ из вне
 
 // ── реэкспортируем публичное API (никаких `use ...`, только `pub use`)
 pub use af_surface::*;
@@ -97,6 +97,6 @@ pub use homotopy::*;
 pub use intersection_curve::*;
 pub use pcurve::*;
 pub use processor::*;
+pub use rbf_surface::*;
 pub use revolved_curve::*;
 pub use trimmed_curve::*;
-pub use rbf_surface::*;
