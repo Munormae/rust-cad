@@ -99,9 +99,9 @@ impl ToSameGeometry<Surface> for RevolutedCurve<Curve3D> {
 
 #[test]
 fn builder() {
-    use truck_meshalgo::prelude::*;
-    use truck_modeling::builder;
-    truck_topology::prelude!(Point3, Curve3D, Surface);
+    use cryxtal_meshalgo::prelude::*;
+    use cryxtal_modeling::builder;
+    cryxtal_topology::prelude!(Point3, Curve3D, Surface);
 
     // cube
     let v = builder::vertices([(0.0, 0.0, 0.0), (1.0, 0.0, 0.0)]);

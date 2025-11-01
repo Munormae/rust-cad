@@ -1502,7 +1502,7 @@ fn many_closed_boundary_cylinder() {
         (0..=1).for_each(|fid| {
             let eid = faces[fid].boundaries[i][0].index;
             let p = vertices[edges[eid].vertices.0];
-            assert!(f64::signum(p.y) == f64::signum(f64::powi(-1.0, fid as i32)));
+            assert_eq!(f64::signum(p.y), f64::signum(f64::powi(-1.0, fid as i32)));
         });
     });
 }
@@ -1534,7 +1534,7 @@ fn step_import() {
         let table = Table::from_step(&step_string).unwrap();
         table.shell.values().cloned().for_each(|step_shell| {
             let mut cshell = table.to_compressed_shell(&step_shell).unwrap();
-            cshell.robust_split_closed_edges_and_faces(0.05);
+            CompressedShell::robust_split_closed_edges_and_faces(&mut cshell, 0.05);
             cryxtal_topology::Shell::extract(cshell).unwrap();
         });
     });

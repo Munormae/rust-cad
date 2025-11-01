@@ -101,7 +101,7 @@ proptest::proptest! {
         (u, v) in (0.0..=2.0 * PI, -PI / 2.0..=PI / 2.0),
     ) {
         const EPS: f64 = 1.0e-3;
-        let sphere = Sphere(truck_geometry::prelude::Sphere::new(center.into(), radius));
+        let sphere = Sphere(cryxtal_geometry::prelude::Sphere::new(center.into(), radius));
 
         let uder0 = sphere.uder(u, v);
         let uder1 = (sphere.subs(u + EPS, v) - sphere.subs(u - EPS, v)) / (2.0 * EPS);
