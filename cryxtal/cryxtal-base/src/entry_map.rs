@@ -1,3 +1,5 @@
+﻿//! Lazy wrapper around `HashMap` with deferred key/value construction.
+#![allow(missing_docs)]
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::hash::*;

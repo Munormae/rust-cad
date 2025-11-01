@@ -1,3 +1,5 @@
+//! Публичные алиасы и реэкспорт `cgmath` в двойной точности.
+
 pub use crate::cgmath_extend_traits::*;
 pub use crate::ders::*;
 pub use cgmath::prelude::*;
@@ -5,6 +7,7 @@ pub use cgmath::{frustum, ortho, perspective, Deg, Rad};
 pub use matext4cgmath::*;
 macro_rules! f64_type {
         ($typename: ident) => {
+            #[doc = concat!("Алиас `cgmath::", stringify!($typename), "<f64>`.")]
             pub type $typename = cgmath::$typename<f64>;
         };
         ($a: ident, $($b: ident), *) => { f64_type!($a); f64_type!($($b),*); }

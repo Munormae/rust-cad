@@ -1,11 +1,16 @@
+//! Lightweight identifier derived from a raw pointer.
+#![allow(missing_docs)]
+
 use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 
+/// Represents the address of a value as a hashable identifier.
 pub struct ID<T>(usize, PhantomData<T>);
 
 impl<T> ID<T> {
     #[inline(always)]
+    /// Creates a new identifier from a raw pointer.
     pub fn new(ptr: *const T) -> ID<T> {
         ID(ptr as usize, PhantomData)
     }

@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use crate::cgmath64::*;
 use cgmath::AbsDiffEq;
 use std::fmt::Debug;
@@ -95,14 +97,14 @@ macro_rules! prop_assert_near2 {
             "assertion failed: `left` is near `right`\nleft: {left:?},\nright: {right:?}",
         )
     }};
-    ($left: expr, $right: expr, $($arg: tt)+) => {
+    ($left: expr, $right: expr, $($arg: tt)+) => {{
         let (left, right) = ($left, $right);
         prop_assert!(
             $crate::tolerance::Tolerance::near2(&left, &right),
             "assertion failed: `left` is near `right`\nleft: {left:?},\nright: {right:?}: {}",
             format_args!($($arg)+),
         )
-    };
+    }};
 }
 
 #[test]

@@ -1,15 +1,21 @@
+//! Утилиты работы с осевыми ограничивающими параллелепипедами (AABB).
+
 use cgmath::*;
 use serde::*;
 use std::cmp::Ordering;
 use std::ops::Index;
 
+/// Минимальное и максимальное значение векторной точки, задающее AABB.
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct BoundingBox<V>(V, V);
 
+/// Тип, пригодный к заключению в AABB.
 pub trait Bounded:
     Copy + MetricSpace<Metric = Self::Scalar> + Index<usize, Output = Self::Scalar> + PartialEq
 {
+    /// Скалярный тип координат.
     type Scalar: BaseFloat;
+    /// Тип вектора-диагонали.
     type Vector;
     #[doc(hidden)]
     fn infinity() -> Self;
@@ -93,37 +99,45 @@ impl<V: Bounded> Default for BoundingBox<V> {
 }
 
 impl<V: Bounded> BoundingBox<V> {
+    /// Создаёт пустой AABB.
     #[inline(always)]
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Расширяет бокс так, чтобы он включил указанную точку.
     #[inline(always)]
     pub fn push(&mut self, point: V) {
         self.0 = self.0.min(point);
         self.1 = self.1.max(point);
     }
 
+    /// Возвращает `true`, если бокс пуст (минимум выше максимума).
     #[inline(always)]
     pub fn is_empty(self) -> bool {
-        self.0[0] > self.1[0]
+        let delta = self.0.diagonal(self.1);
+        V::max_component(delta) > V::Scalar::zero()
     }
 
+    /// Возвращает максимальную точку AABB.
     #[inline(always)]
     pub const fn max(self) -> V {
         self.1
     }
 
+    /// Возвращает минимальную точку AABB.
     #[inline(always)]
     pub const fn min(self) -> V {
         self.0
     }
 
+    /// Вычисляет диагональный вектор.
     #[inline(always)]
     pub fn diagonal(self) -> V::Vector {
         self.1.diagonal(self.0)
     }
 
+    /// Возвращает длину диагонали.
     #[inline(always)]
     pub fn diameter(self) -> V::Scalar {
         match self.is_empty() {
@@ -132,39 +146,65 @@ impl<V: Bounded> BoundingBox<V> {
         }
     }
 
+    /// Возвращает максимальное смещение по одной координате.
     #[inline(always)]
     pub fn size(self) -> V::Scalar {
         V::max_component(self.diagonal())
     }
 
+    /// Возвращает центр бокса.
     #[inline(always)]
     pub fn center(self) -> V {
         self.0.mid(self.1)
     }
 
+    /// Проверяет, лежит ли точка внутри или на границе бокса.
     #[inline(always)]
     pub fn contains(self, pt: V) -> bool {
         self + BoundingBox(pt, pt) == self
+    }
+
+    #[inline(always)]
+    /// Возвращает `true`, если AABB пересекается с другим боксом (включая касание).
+    pub fn intersects(&self, other: &Self) -> bool {
+        let intersection = *self ^ *other;
+        !intersection.is_empty()
     }
 }
 
 impl<V> BoundingBox<V> where V: Index<usize> {}
 
-impl<'a, V: Bounded> FromIterator<&'a V> for BoundingBox<V> {
-    fn from_iter<I: IntoIterator<Item = &'a V>>(iter: I) -> BoundingBox<V> {
-        let mut bdd_box = BoundingBox::new();
-        let bdd_box_mut = &mut bdd_box;
-        iter.into_iter().for_each(move |pt| bdd_box_mut.push(*pt));
-        bdd_box
+impl<V: Bounded> FromIterator<V> for BoundingBox<V> {
+    /// Создаёт бокс, охватывающий все элементы итератора.
+    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> BoundingBox<V> {
+        let mut bbox = BoundingBox::new();
+        bbox.extend(iter);
+        bbox
     }
 }
 
-impl<V: Bounded> FromIterator<V> for BoundingBox<V> {
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> BoundingBox<V> {
-        let mut bdd_box = BoundingBox::new();
-        let bdd_box_mut = &mut bdd_box;
-        iter.into_iter().for_each(move |pt| bdd_box_mut.push(pt));
-        bdd_box
+impl<'a, V: Bounded> FromIterator<&'a V> for BoundingBox<V> {
+    /// Строит бокс из итератора ссылок.
+    fn from_iter<I: IntoIterator<Item = &'a V>>(iter: I) -> BoundingBox<V> {
+        let mut bbox = BoundingBox::new();
+        bbox.extend(iter);
+        bbox
+    }
+}
+
+impl<V: Bounded> Extend<V> for BoundingBox<V> {
+    /// Дополняет бокс точками из итератора.
+    #[inline(always)]
+    fn extend<I: IntoIterator<Item = V>>(&mut self, iter: I) {
+        iter.into_iter().for_each(|point| self.push(point));
+    }
+}
+
+impl<'a, V: Bounded> Extend<&'a V> for BoundingBox<V> {
+    /// Дополняет бокс ссылками на точки.
+    #[inline(always)]
+    fn extend<I: IntoIterator<Item = &'a V>>(&mut self, iter: I) {
+        iter.into_iter().for_each(|point| self.push(*point));
     }
 }
 
@@ -281,5 +321,39 @@ impl<V: Bounded> PartialOrd for BoundingBox<V> {
             (false, true) => Some(Ordering::Less),
             (false, false) => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use cgmath::{Point1, Point3};
+
+    #[test]
+    fn intersects_detects_overlap() {
+        let mut a = BoundingBox::new();
+        a.push(Point3::new(0.0, 0.0, 0.0));
+        a.push(Point3::new(1.0, 1.0, 1.0));
+
+        let mut b = BoundingBox::new();
+        b.push(Point3::new(0.5, 0.5, 0.5));
+        b.push(Point3::new(2.0, 2.0, 2.0));
+
+        let mut c = BoundingBox::new();
+        c.push(Point3::new(2.1, 0.0, 0.0));
+        c.push(Point3::new(3.0, 1.0, 1.0));
+
+        assert!(a.intersects(&b));
+        assert!(!a.intersects(&c));
+    }
+
+    #[test]
+    fn extend_accepts_references() {
+        let points = [Point1::new(1.0f32), Point1::new(-2.0), Point1::new(4.0)];
+        let mut bbox = BoundingBox::new();
+        bbox.extend(points.iter());
+
+        assert_eq!(bbox.min()[0], -2.0);
+        assert_eq!(bbox.max()[0], 4.0);
     }
 }

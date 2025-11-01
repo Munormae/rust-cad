@@ -1,9 +1,23 @@
+//! Containers for high-order curve and surface derivatives.
+#![allow(missing_docs)]
 use crate::cgmath_extend_traits::*;
 use cgmath::*;
 use num_traits::NumCast;
-use std::fmt::Debug;
+use std::error::Error;
+use std::fmt::{self, Debug, Display};
 
 pub const MAX_DER_ORDER: usize = 31;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DerivativeCapacityError;
+
+impl Display for DerivativeCapacityError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("derivative order exceeds MAX_DER_ORDER")
+    }
+}
+
+impl Error for DerivativeCapacityError {}
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct CurveDers<V> {
@@ -17,6 +31,10 @@ impl<V> CurveDers<V> {
     where
         V: Zero + Copy,
     {
+        assert!(
+            max_order <= MAX_DER_ORDER,
+            "CurveDers::new({max_order}) exceeds MAX_DER_ORDER ({MAX_DER_ORDER})"
+        );
         Self {
             array: [V::zero(); MAX_DER_ORDER + 1],
             max_order,
@@ -30,8 +48,18 @@ impl<V> CurveDers<V> {
 
     #[inline]
     pub fn push(&mut self, value: V) {
+        self.try_push(value)
+            .expect("CurveDers capacity exhausted; use `try_push` to handle this explicitly");
+    }
+
+    #[inline]
+    pub fn try_push(&mut self, value: V) -> Result<(), DerivativeCapacityError> {
+        if self.max_order >= MAX_DER_ORDER {
+            return Err(DerivativeCapacityError);
+        }
         self.max_order += 1;
         self.array[self.max_order] = value;
+        Ok(())
     }
 
     #[inline]
@@ -253,7 +281,7 @@ where
 }
 
 impl<V: Debug> Debug for CurveDers<V> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.array[..=self.max_order].fmt(f)
     }
 }
@@ -270,6 +298,10 @@ impl<V> SurfaceDers<V> {
     where
         V: Zero + Copy,
     {
+        assert!(
+            max_order <= MAX_DER_ORDER,
+            "SurfaceDers::new({max_order}) exceeds MAX_DER_ORDER ({MAX_DER_ORDER})"
+        );
         Self {
             array: [[V::zero(); MAX_DER_ORDER + 1]; MAX_DER_ORDER + 1],
             max_order,
@@ -498,7 +530,7 @@ where
 }
 
 impl<V: Debug> Debug for SurfaceDers<V> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("[")?;
         for (i, a) in self.slice_iter().enumerate() {
             a[..=self.max_order - i].fmt(f)?;
@@ -515,6 +547,14 @@ fn surface_ders_debug() {
     let ders = SurfaceDers::<f64>::new(2);
     let string = format!("{ders:?}");
     assert_eq!(string, "[[0.0, 0.0, 0.0], [0.0, 0.0], [0.0]]");
+}
+
+#[test]
+fn curve_ders_try_push_overflow() {
+    use cgmath::{Vector1, Zero};
+
+    let mut ders = CurveDers::<Vector1<f64>>::new(MAX_DER_ORDER);
+    assert!(ders.try_push(Vector1::zero()).is_err());
 }
 
 fn can_init(len: usize, n: usize, max: usize) -> bool {

@@ -1,6 +1,11 @@
-use std::ops::{Mul, Sub};
+﻿//! Newton solver utilities and iteration logging helpers.
+#![allow(missing_docs)]
 
 use crate::{cgmath64::*, tolerance::*};
+use std::ops::{Mul, Sub};
+
+#[cfg(feature = "parallel")]
+use rayon::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct CalcOutput<V, M> {
@@ -64,6 +69,38 @@ where
     Err(log)
 }
 
+/// РџР°СЂР°Р»Р»РµР»СЊРЅРѕ СЂРµС€Р°РµС‚ РЅРµСЃРєРѕР»СЊРєРѕ Р·Р°РґР°С‡ РќСЊСЋС‚РѕРЅР° РїРѕ РЅР°Р±РѕСЂСѓ СЃС‚Р°СЂС‚РѕРІС‹С… РїСЂРёР±Р»РёР¶РµРЅРёР№.
+#[cfg(feature = "parallel")]
+pub fn solve_many<V, M, I, F>(function: F, hints: I, trials: usize) -> Vec<Result<V, NewtonLog<V>>>
+where
+    V: Sub<Output = V> + Copy + Tolerance + Send,
+    M: Jacobian<V> + Send,
+    F: Sync + Fn(V) -> CalcOutput<V, M>,
+    I: IntoParallelIterator<Item = V>,
+{
+    let func = &function;
+    hints
+        .into_par_iter()
+        .map(move |mut hint| {
+            let mut log = NewtonLog::new(cfg!(debug_assertions), trials);
+            for _ in 0..=trials {
+                log.push(hint);
+                let CalcOutput { value, derivation } = func(hint);
+                let Some(inv) = derivation.invert() else {
+                    log.set_degenerate(true);
+                    return Err(log);
+                };
+                let next = hint - inv * value;
+                if next.near2(&hint) {
+                    return Ok(hint);
+                }
+                hint = next;
+            }
+            Err(log)
+        })
+        .collect()
+}
+
 mod newtonlog {
     use std::fmt::*;
     #[derive(Clone, Debug)]
@@ -122,3 +159,26 @@ mod newtonlog {
     }
 }
 pub use newtonlog::NewtonLog;
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "parallel")]
+    #[test]
+    fn solve_many_converges_for_linear_case() {
+        use crate::tolerance::Tolerance;
+
+        let results = super::solve_many(
+            |x| super::CalcOutput {
+                value: x - 2.0,
+                derivation: 1.0,
+            },
+            vec![0.0, 5.0, -3.0],
+            4,
+        );
+
+        for result in results {
+            let root = result.expect("Newton failed on linear function");
+            assert!(root.near(&2.0));
+        }
+    }
+}

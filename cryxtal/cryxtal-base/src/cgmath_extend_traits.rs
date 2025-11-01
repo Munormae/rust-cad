@@ -1,12 +1,17 @@
+﻿//! Extensions for working with homogeneous and control-point arithmetic.
+#![allow(missing_docs)]
+
 use cgmath::*;
 
 pub mod control_point {
+    //! РЈРЅРёС„РёС†РёСЂРѕРІР°РЅРЅС‹Р№ С‚СЂРµР№С‚ РґР»СЏ РєРѕРЅС‚СЂРѕР»СЊРЅС‹С… С‚РѕС‡РµРє СЂР°Р·РЅРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё.
     use cgmath::{
         BaseFloat, EuclideanSpace, Point1, Point2, Point3, Vector1, Vector2, Vector3, Vector4, Zero,
     };
     use std::fmt::Debug;
     use std::ops::*;
 
+    /// РљРѕРЅС‚СЂРѕР»СЊРЅР°СЏ С‚РѕС‡РєР° NURBS/Bezier СЃ РїРѕРґРґРµСЂР¶РєРѕР№ Р°СЂРёС„РјРµС‚РёРєРё Рё РёРЅРґРµРєСЃР°С†РёРё.
     pub trait ControlPoint<S>:
         Add<Self::Diff, Output = Self>
         + Sub<Self::Diff, Output = Self>
@@ -37,9 +42,13 @@ pub mod control_point {
             + Debug
             + Index<usize, Output = S>
             + IndexMut<usize, Output = S>;
+        /// Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІР° РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ С‚РѕС‡РєРё.
         const DIM: usize;
+        /// РўРѕС‡РєР° РІ РЅР°С‡Р°Р»Рµ РєРѕРѕСЂРґРёРЅР°С‚ РёР»Рё РЅСѓР»РµРІРѕР№ РІРµРєС‚РѕСЂ.
         fn origin() -> Self;
+        /// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ С‚РѕС‡РєСѓ РІ РІРµРєС‚РѕСЂ СЂР°Р·РЅРѕСЃС‚РµР№.
         fn to_vec(self) -> Self::Diff;
+        /// РЎРѕР·РґР°С‘С‚ С‚РѕС‡РєСѓ РёР· РІРµРєС‚РѕСЂР° СЂР°Р·РЅРѕСЃС‚РµР№.
         fn from_vec(vec: Self::Diff) -> Self;
     }
     impl<S: BaseFloat> ControlPoint<S> for Point1<S> {
@@ -135,21 +144,29 @@ pub mod control_point {
     }
 }
 
+/// Р’РµРєС‚РѕСЂ РІ РѕРґРЅРѕСЂРѕРґРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С… СЃ РїРѕРґРґРµСЂР¶РєРѕР№ РѕРїРµСЂР°С†РёРё РІС‹РґРµР»РµРЅРёСЏ РІРµСЃР°.
 pub trait Homogeneous: VectorSpace {
+    /// РЎРІСЏР·Р°РЅРЅР°СЏ С‚РѕС‡РєР° РІ РґРµРєР°СЂС‚РѕРІРѕРј РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ.
     type Point: EuclideanSpace<Scalar = Self::Scalar>;
+    /// РћС‚Р±СЂР°СЃС‹РІР°РµС‚ РІРµСЃРѕРІСѓСЋ РєРѕРјРїРѕРЅРµРЅС‚Сѓ.
     fn truncate(self) -> <Self::Point as EuclideanSpace>::Diff;
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЃ.
     fn weight(self) -> Self::Scalar;
+    /// РЎС‚СЂРѕРёС‚ РѕРґРЅРѕСЂРѕРґРЅС‹Р№ РІРµРєС‚РѕСЂ РёР· С‚РѕС‡РєРё (СЃ РІРµСЃРѕРј 1).
     fn from_point(point: Self::Point) -> Self;
     #[inline(always)]
+    /// РЎС‚СЂРѕРёС‚ РѕРґРЅРѕСЂРѕРґРЅС‹Р№ РІРµРєС‚РѕСЂ РїРѕ С‚РѕС‡РєРµ Рё РїСЂРѕРёР·РІРѕР»СЊРЅРѕРјСѓ РІРµСЃСѓ.
     fn from_point_weight(point: Self::Point, weight: Self::Scalar) -> Self {
         Self::from_point(point) * weight
     }
     #[inline(always)]
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РѕС‡РєСѓ, РЅРѕСЂРјР°Р»РёР·РѕРІР°РІ РІРµСЃ.
     fn to_point(self) -> Self::Point {
         Self::Point::from_vec(self.truncate() / self.weight())
     }
 }
 
+/// Р’С‹С‡РёСЃР»СЏРµС‚ СЂР°С†РёРѕРЅР°Р»СЊРЅСѓСЋ РїСЂРѕРёР·РІРѕРґРЅСѓСЋ Р·Р°РґР°РЅРЅРѕРіРѕ РїРѕСЂСЏРґРєР° РёР· РјР°СЃСЃРёРІР° РѕРґРЅРѕСЂРѕРґРЅС‹С… РїСЂРѕРёР·РІРѕРґРЅС‹С….
 pub fn rat_der<V: Homogeneous>(ders: &[V]) -> <V::Point as EuclideanSpace>::Diff {
     let zero = <V::Point as EuclideanSpace>::Diff::zero();
     let len = ders.len();
@@ -179,6 +196,7 @@ pub fn rat_der<V: Homogeneous>(ders: &[V]) -> <V::Point as EuclideanSpace>::Diff
     }
 }
 
+/// Р—Р°РїРѕР»РЅСЏРµС‚ РјР°СЃСЃРёРІ `evals` СЂР°С†РёРѕРЅР°Р»СЊРЅС‹РјРё РїСЂРѕРёР·РІРѕРґРЅС‹РјРё РІСЃРµС… РїРѕСЂСЏРґРєРѕРІ РґРѕ `ders.len()`.
 pub fn rat_ders<V: Homogeneous>(ders: &[V], evals: &mut [<V::Point as EuclideanSpace>::Diff]) {
     assert!(evals.len() >= ders.len(),);
     let from = <V::Scalar as num_traits::NumCast>::from;
@@ -192,6 +210,7 @@ pub fn rat_ders<V: Homogeneous>(ders: &[V], evals: &mut [<V::Point as EuclideanS
     }
 }
 
+/// РњРЅРѕРіРѕРјРµСЂРЅР°СЏ СЂР°С†РёРѕРЅР°Р»СЊРЅР°СЏ РїСЂРѕРёР·РІРѕРґРЅР°СЏ РґР»СЏ РєРѕРјР±РёРЅРёСЂРѕРІР°РЅРЅРѕРіРѕ РјР°СЃСЃРёРІР° `ders`.
 pub fn multi_rat_der<V, A>(ders: &[A]) -> <V::Point as EuclideanSpace>::Diff
 where
     V: Homogeneous,
@@ -243,6 +262,7 @@ where
     }
 }
 
+/// РћРґРЅРѕРІСЂРµРјРµРЅРЅРѕРµ РІС‹С‡РёСЃР»РµРЅРёРµ РІСЃРµС… СЃРјРµС€Р°РЅРЅС‹С… СЂР°С†РёРѕРЅР°Р»СЊРЅС‹С… РїСЂРѕРёР·РІРѕРґРЅС‹С….
 pub fn multi_rat_ders<V, A0, A1>(ders: &[A0], evals: &mut [A1])
 where
     V: Homogeneous,
@@ -319,6 +339,7 @@ impl<S: BaseFloat> Homogeneous for Vector4<S> {
     }
 }
 
+/// РњРѕРґСѓР»СЊ РїСЂРѕРёР·РІРѕРґРЅС‹С… РєСЂРёРІРѕР№ (РїРѕР»СѓС‡Р°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РїРѕ РґР»РёРЅРµ РґСѓРіРё).
 pub fn abs_ders<V>(ders: &[V], evals: &mut [f64])
 where
     V: InnerSpace<Scalar = f64>,
